@@ -1,0 +1,2 @@
+local class = require 'middleclass'
+
