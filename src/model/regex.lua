@@ -1,4 +1,4 @@
-local class = require ("middleclass")
+local class = require("src/model/middleclass")
 
 Regex_module = {}
 
@@ -31,21 +31,40 @@ end
 
 --Класс RegexNode представляет собой вершину в дереве, представляющее regex
 --Поле value хранит строку-подвыражение в regex
+--Поле value_for_print хранит строку-подвыражение в regex для вывода (отличие в epsilon, т.е. пустой строке)
 --Поле type содержит операцию, которая соответствует данному подвыражению (альтернатива, конкатенация, итерация или просто символ)
---Поле children содержит количество дочерних вершин (максимум две). Им соответствуют поля firstChild и secondChild
+--Поле nchildren содержит количество дочерних вершин (максимум две). Им соответствуют поля firstChild и secondChild
 
-function RegexNode:initialize(regex)
-    regex = trimBrackets(regex)
+function RegexNode:initialize(regex, parse)
     self.value = regex
-    self.type = whatTypeOfRegex(regex)
-    if (self.type ~= Regex_module.operations.symbol) then 
-        local subexpressions = extractSubexpressions(regex, self.type)
+    self.value_for_print = self.value
+    if (self.value == "") then
+        self.value_for_print = "_epsilon_"
+    end
+    if parse then
+        self.type, self.nchildren, firstChild, secondChild = parseRegexNodeAttributes(regex)
+        print(self.nchildren)
+        if firstChild then
+            self.firstChild = firstChild
+        end
+        if secondChild then
+            self.secondChild = secondChild
+        end
+    end
+end
+
+function parseRegexNodeAttributes(regex)
+    regex = trimBrackets(regex)
+    local type = whatTypeOfRegex(regex)
+    local nchildren, firstChild, secondChild
+    if (type ~= Regex_module.operations.symbol) then 
+        local subexpressions = extractSubexpressions(regex, type)
         if (#subexpressions > 1) then
-            self.children = 2
+            nchildren = 2
             local firstRegex = ""
             local secondRegex = ""
             local separator = ""
-            if (self.type == Regex_module.operations.alt) then
+            if (type == Regex_module.operations.alt) then
                 separator = "|"
             end
             for k, v in pairs(subexpressions) do
@@ -63,20 +82,20 @@ function RegexNode:initialize(regex)
                     end
                 end
             end
-            self.firstChild = RegexNode:new(firstRegex)
-            self.secondChild = RegexNode:new(secondRegex) 
+            firstChild = RegexNode:new(firstRegex, true)
+            secondChild = RegexNode:new(secondRegex, true) 
         else
-            self.children = 1
-            self.firstChild = RegexNode:new(subexpressions[1])
+            nchildren = 1
+            firstChild = RegexNode:new(subexpressions[1], true)
         end
     else
-        self.children = 0
+        nchildren = 0
     end
-    
+    return type, nchildren, firstChild, secondChild
 end
 
 function cbsEndsAt(str, start)
-    local balance = 0
+    balance = 0
     for i = start, #str, 1 do
         if (str:byte(i) == bytes["("]) then
             balance = balance + 1
@@ -119,21 +138,6 @@ function whatTypeOfRegex(regex)
         end
     end
     return operation
-end
-
-function altOptionEndsAt(regex, start)
-    local i = start
-    while i <= #regex do
-        if (regex:byte(i) == bytes["("]) then
-            i = cbsEndsAt(regex, i) + 1
-        elseif (regex:byte(i) == bytes["|"]) then
-            return i - 1
-        else
-            i = i + 1
-        end
-    end
-    
-    return #regex - 1
 end
 
 function trimBrackets(regex) 
