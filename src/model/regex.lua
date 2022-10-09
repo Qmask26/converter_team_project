@@ -89,8 +89,7 @@ function cbsEndsAt(str, start)
     return -1
 end
 
-function whatTypeOfRegex(regex)
-    
+function whatTypeOfRegex(regex)  
     if (#regex == 1) then
         operation = Regex_module.operations.symbol
     elseif (#regex == 2 and regex:byte(2) == bytes["*"] or 
