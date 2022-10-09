@@ -35,6 +35,7 @@ end
 --Поле children содержит количество дочерних вершин (максимум две). Им соответствуют поля firstChild и secondChild
 
 function RegexNode:initialize(regex)
+    regex = trimBrackets(regex)
     self.value = regex
     self.type = whatTypeOfRegex(regex)
     if (self.type ~= Regex_module.operations.symbol) then 
@@ -75,7 +76,7 @@ function RegexNode:initialize(regex)
 end
 
 function cbsEndsAt(str, start)
-    balance = 0
+    local balance = 0
     for i = start, #str, 1 do
         if (str:byte(i) == bytes["("]) then
             balance = balance + 1
@@ -90,11 +91,12 @@ function cbsEndsAt(str, start)
 end
 
 function whatTypeOfRegex(regex)  
+    local operation = 0
     if (#regex == 1) then
         operation = Regex_module.operations.symbol
     elseif (#regex == 2 and regex:byte(2) == bytes["*"] or 
             #regex > 3 and regex:byte(1) == bytes["("] and 
-            regex:byte(#regex - 1) == bytes[")"] and 
+            cbsEndsAt(regex, 1) == #regex - 1 and 
             regex:byte(#regex) == bytes["*"]) then
         operation = Regex_module.operations.iter
     else
@@ -134,6 +136,13 @@ function altOptionEndsAt(regex, start)
     return #regex - 1
 end
 
+function trimBrackets(regex) 
+    if (regex:byte(1) == bytes["("] and cbsEndsAt(regex, 1) == #regex) then
+        regex = regex:sub(2, #regex - 1)
+    end
+    return regex
+end
+
 function isAlphabetic(c)
     return 
            #c > 0 and
@@ -159,6 +168,9 @@ function extractSubexpressions(regex, tp)
         while i <= #regex do
             if (regex:byte(i) == bytes["("]) then
                 local endsAt = cbsEndsAt(regex, i)
+                if (regex:byte(endsAt + 1) == bytes["*"]) then
+                    endsAt = endsAt + 1
+                end
                 subex = regex:sub(i, endsAt)
                 if (#subex > 0) then
                     table.insert(subexpressions, subex)
@@ -166,32 +178,34 @@ function extractSubexpressions(regex, tp)
                 i = endsAt + 1
             else 
                 if (isAlphabetic(string.char(regex:byte(i)))) then
-                    table.insert(subexpressions, string.char(regex:byte(i)))
+                    if (regex:byte(i + 1) == bytes["*"]) then
+                        table.insert(subexpressions, regex:sub(i, i + 1))
+                    else 
+                        table.insert(subexpressions, string.char(regex:byte(i)))
+                    end
                 end
                 i = i + 1
             end
         end
     elseif (tp == Regex_module.operations.alt) then
-        regex = "|" .. regex .. "|"
         i = 1
         subexpressions = {}
-        while i <= #regex do
+        local subex = ""
+        for i = 1, #regex, 1 do
             if (regex:byte(i) == bytes["|"]) then
-                local endsAt = altOptionEndsAt(regex, i + 1)
-                subex = regex:sub(i + 1, endsAt)
-                if (#subex > 0) then
-                    table.insert(subexpressions, subex)
-                end
-                i = endsAt + 2
+                table.insert(subexpressions, subex)
+                subex = ""
             else 
-                if (isAlphabetic(string.char(regex:byte(i)))) then
-                    table.insert(subexpressions, string.char(regex:byte(i)))
-                end
-                i = i + 1
+                subex = subex .. string.char(regex:byte(i))
             end
         end
+        table.insert(subexpressions, subex)
     else 
-        subexpressions = {regex:sub(2, #regex - 2)}
+        if (#regex == 2) then
+            subexpressions = {regex:sub(1, 1)}
+        else 
+            subexpressions = {regex:sub(2, #regex - 2)}
+        end
     end
     return subexpressions
 end
