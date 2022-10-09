@@ -1,4 +1,4 @@
-local class = require ("middleclass")
+local class = require("src/model/middleclass")
 
 Regex_module = {}
 
@@ -31,20 +31,40 @@ end
 
 --Класс RegexNode представляет собой вершину в дереве, представляющее regex
 --Поле value хранит строку-подвыражение в regex
+--Поле value_for_print хранит строку-подвыражение в regex для вывода (отличие в epsilon, т.е. пустой строке)
 --Поле type содержит операцию, которая соответствует данному подвыражению (альтернатива, конкатенация, итерация или просто символ)
---Поле children содержит количество дочерних вершин (максимум две). Им соответствуют поля firstChild и secondChild
+--Поле nchildren содержит количество дочерних вершин (максимум две). Им соответствуют поля firstChild и secondChild
 
-function RegexNode:initialize(regex)
+function RegexNode:initialize(regex, parse)
     self.value = regex
-    self.type = whatTypeOfRegex(regex)
-    if (self.type ~= Regex_module.operations.symbol) then 
-        local subexpressions = extractSubexpressions(regex, self.type)
+    self.value_for_print = self.value
+    if (self.value == "") then
+        self.value_for_print = "_epsilon_"
+    end
+    
+    if parse then
+        self.type, self.nchildren, firstChild, secondChild = parseRegexNodeAttributes(regex)
+        print(self.nchildren)
+        if firstChild then
+            self.firstChild = firstChild
+        end
+        if secondChild then
+            self.secondChild = secondChild
+        end
+    end
+end
+
+function parseRegexNodeAttributes(regex)
+    local type = whatTypeOfRegex(regex)
+    local nchildren, firstChild, secondChild
+    if (type ~= Regex_module.operations.symbol) then 
+        local subexpressions = extractSubexpressions(regex, type)
         if (#subexpressions > 1) then
-            self.children = 2
+            nchildren = 2
             local firstRegex = ""
             local secondRegex = ""
             local separator = ""
-            if (self.type == Regex_module.operations.alt) then
+            if (type == Regex_module.operations.alt) then
                 separator = "|"
             end
             for k, v in pairs(subexpressions) do
@@ -62,16 +82,16 @@ function RegexNode:initialize(regex)
                     end
                 end
             end
-            self.firstChild = RegexNode:new(firstRegex)
-            self.secondChild = RegexNode:new(secondRegex) 
+            firstChild = RegexNode:new(firstRegex, true)
+            secondChild = RegexNode:new(secondRegex, true) 
         else
-            self.children = 1
-            self.firstChild = RegexNode:new(subexpressions[1])
+            nchildren = 1
+            firstChild = RegexNode:new(subexpressions[1], true)
         end
     else
-        self.children = 0
+        nchildren = 0
     end
-    
+    return type, nchildren, firstChild, secondChild
 end
 
 function cbsEndsAt(str, start)
@@ -90,7 +110,7 @@ function cbsEndsAt(str, start)
 end
 
 function whatTypeOfRegex(regex)  
-    if (#regex == 1) then
+    if (#regex == 1 or #regex == 0) then
         operation = Regex_module.operations.symbol
     elseif (#regex == 2 and regex:byte(2) == bytes["*"] or 
             #regex > 3 and regex:byte(1) == bytes["("] and 
