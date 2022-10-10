@@ -195,12 +195,25 @@ function extractSubexpressions(regex, tp)
         i = 1
         subexpressions = {}
         local subex = ""
-        for i = 1, #regex, 1 do
+        local i = 1
+        while i <= #regex do 
             if (regex:byte(i) == bytes["|"]) then
                 table.insert(subexpressions, subex)
                 subex = ""
-            else 
+                i = i + 1
+            elseif (regex:byte(i) == bytes["("]) then
+                local endsAt = cbsEndsAt(regex, i)
+                if (regex:byte(endsAt + 1) == bytes["*"]) then
+                    endsAt = endsAt + 1
+                end
+                local cbs = regex:sub(i, endsAt)
+                if (#cbs > 0) then
+                    subex = subex .. cbs
+                end
+                i = endsAt + 1
+            else
                 subex = subex .. string.char(regex:byte(i))
+                i = i + 1
             end
         end
         table.insert(subexpressions, subex)
@@ -216,5 +229,7 @@ end
 
 Regex_module.Regex = Regex
 Regex_module.RegexNode = RegexNode
+
+RegexNode:new("(((a|(c|d)*)|bc)*)", true)
 
 return Regex_module
