@@ -11,7 +11,6 @@ Regex_module.operations = {
     empty_set = 4
 }
 
-
 bytes = {
     [" "] = 32,
     ["("] = 40,
@@ -23,7 +22,6 @@ bytes = {
 
 Regex = class("Regex")
 RegexNode = class("RegexNode")
-
 
 --Класс Regex имеет единственное поле - root, корень дерева, представляющего regex
 function Regex:initialize(regex)
