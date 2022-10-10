@@ -7,7 +7,8 @@ Regex_module.operations = {
     concat = 0,
     alt = 1,
     iter = 2,
-    symbol = 3
+    symbol = 3,
+    empty_set = 4
 }
 
 
@@ -43,7 +44,6 @@ function RegexNode:initialize(regex, parse)
     end
     if parse then
         self.type, self.nchildren, firstChild, secondChild = parseRegexNodeAttributes(regex)
-        print(self.nchildren)
         if firstChild then
             self.firstChild = firstChild
         end
