@@ -5,6 +5,11 @@ function printv(v)
 end
 
 print("Test Set data structure")
+local s = Set:new({})
+assert(s.size == 0)
+local s = Set:new({''})
+assert(s.size == 1)
+
 local s1 = Set:new({1,2,3})
 print('s1')
 s1:foreach(printv)
