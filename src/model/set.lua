@@ -39,4 +39,12 @@ function Set:union(other_set)
 	end
 end
 
+function Set:str()
+	res = ""
+	for key in pairs(self.items) do
+		res = res .. tostring(key) .. " "
+	end
+	return string.sub(res, 0, -2)
+end
+
 return Set
