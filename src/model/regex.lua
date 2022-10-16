@@ -7,9 +7,9 @@ Regex_module.operations = {
     concat = 0,
     alt = 1,
     iter = 2,
-    symbol = 3
+    symbol = 3,
+    empty_set = 4
 }
-
 
 bytes = {
     [" "] = 32,
@@ -22,7 +22,6 @@ bytes = {
 
 Regex = class("Regex")
 RegexNode = class("RegexNode")
-
 
 --Класс Regex имеет единственное поле - root, корень дерева, представляющего regex
 function Regex:initialize(regex)
