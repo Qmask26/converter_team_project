@@ -27,7 +27,7 @@ function Automaton:initialize(statesNumber, initialState, finalStates, transitio
 
     for i = 1, #transitions, 1 do
         t = transitions[i]
-        if (#self.transitions[t.from] == 0) then
+        if (self.transitions[t.from] == nil) then
             if (self.isDFA) then
                 self.transitions[t.from] = {[t.symbol] = {[t.label] = t.to}}
             else 
@@ -63,15 +63,14 @@ function Automaton:removeFinalState(state)
 end
 
 function Automaton:addTransition(from, to, symbol, label)
-    t = Transition:new(from, to, symbol, label)
-    if (#self.transitions[t.from] == 0) then
+    if (self.transitions[from] == nil) then
         if (self.isDFA) then
-            self.transitions[t.from] = {[t.symbol] = {[t.label] = t.to}}
+            self.transitions[from] = {[symbol] = {[label] = to}}
         else 
-            self.transitions[t.from] = {[t.symbol] = {[t.label] = {t.to}}}
+            self.transitions[from] = {[symbol] = {[label] = {to}}}
         end
     else 
-        table.insert(self.transitions[t.from][t.symbol][t.label], t.to)
+        table.insert(self.transitions[from][symbol][label], to)
     end
 end
 
