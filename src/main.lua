@@ -9,6 +9,9 @@ elseif (arg[1] == "-d") then
 end
 
 io.input(arg[2])
+inputFile = io.open(arg[2], "r")
+outputFile = io.open("output.txt", "w")
+
 
 --InputParser = require("parser/input_parser")
 --input = InputParser:parseInput()
