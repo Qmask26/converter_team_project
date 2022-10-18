@@ -250,7 +250,7 @@ local CONVETER_FUNCTIONS = {
 }
 
 for key, value in pairs(CONVETER_FUNCTIONS) do
-    value.__call = function () print(key) end
+    setmetatable(value, {__call = function () print(key) end})
 end
 
 return CONVETER_FUNCTIONS

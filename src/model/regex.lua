@@ -25,7 +25,7 @@ RegexNode = class("RegexNode")
 
 --Класс Regex имеет единственное поле - root, корень дерева, представляющего regex
 function Regex:initialize(regex)
-    self.root = RegexNode:new(regex)
+    self.root = RegexNode:new(regex, true)
 end
 
 --Класс RegexNode представляет собой вершину в дереве, представляющее regex
@@ -228,6 +228,6 @@ end
 Regex_module.Regex = Regex
 Regex_module.RegexNode = RegexNode
 
-RegexNode:new("(((a|(c|d)*)|bc)*)", true)
+r = RegexNode:new("(((a|(c|d)*)|bc)*)", true)
 
 return Regex_module

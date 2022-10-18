@@ -52,6 +52,7 @@ function Test:initialize(arg1, arg2, arg3)
     self.arg1 = arg1
     self.arg2 = arg2
     self.arg3 = arg3
+    print(arg1.name, arg2.name, arg3.name)
 end
 
 function Test:execute()
@@ -63,7 +64,7 @@ Expression_module = {
     test = Test,
     computable = Computable,
     computableType = computableType,
-    expressionType = expressionType
+    expressionType = expressionType,
 }
 
 return Expression_module
