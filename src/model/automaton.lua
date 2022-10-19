@@ -5,6 +5,8 @@ Automaton_module = {}
 Automaton = class("Automaton")
 Transition = class("Transition")
 
+Automaton_module.eps = "_epsilon_"
+
 function Automaton:initialize(statesNumber, finalStates, transitions, isDFA)
     if (isDFA == nil) then
         self.isDFA = false
