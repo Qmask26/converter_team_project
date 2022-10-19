@@ -8,7 +8,8 @@ Regex_module.operations = {
     alt = 1,
     iter = 2,
     symbol = 3,
-    empty_set = 4
+    empty_set = 4,
+    positive = 5
 }
 
 bytes = {
@@ -25,7 +26,7 @@ RegexNode = class("RegexNode")
 
 --Класс Regex имеет единственное поле - root, корень дерева, представляющего regex
 function Regex:initialize(regex)
-    self.root = RegexNode:new(regex)
+    self.root = RegexNode:new(regex, true)
 end
 
 --Класс RegexNode представляет собой вершину в дереве, представляющее regex
@@ -49,6 +50,8 @@ function RegexNode:initialize(regex, parse)
             self.secondChild = secondChild
         end
     end
+
+    print(self.value_for_print, self.type)
 end
 
 function parseRegexNodeAttributes(regex)

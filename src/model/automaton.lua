@@ -5,16 +5,17 @@ Automaton_module = {}
 Automaton = class("Automaton")
 Transition = class("Transition")
 
-function Automaton:initialize(statesNumber, initialState, finalStates, transitions, isDFA)
+function Automaton:initialize(statesNumber, finalStates, transitions, isDFA)
     if (isDFA == nil) then
         self.isDFA = false
     else 
         self.isDFA = isDFA
     end
-    self.iniitial  = initialState
     self.states = statesNumber
     self.transitions = {}
+    self.transitions_raw = transitions
     self.finality = {}
+
     for i = 1, statesNumber, 1 do
         self.finality[i] = false
     end
@@ -27,7 +28,7 @@ function Automaton:initialize(statesNumber, initialState, finalStates, transitio
 
     for i = 1, #transitions, 1 do
         t = transitions[i]
-        if (self.transitions[t.from] == nil) then
+        if (#self.transitions[t.from] == 0) then
             if (self.isDFA) then
                 self.transitions[t.from] = {[t.symbol] = {[t.label] = t.to}}
             else 
@@ -50,8 +51,18 @@ function Automaton:transit(state, symbol, label)
     end
 end
 
+function Automaton:allTransitions(state)
+    local t = {}
+    for k1, v1 in pairs(self.transitions_raw) do
+        if v1.from == state then
+            table.insert(t, {v1.to, v1.symbol, v1.label})
+        end
+    end
+    return t
+end
+
 function Automaton:isStateFinal(state)
-    return self.isStateFinal[state]
+    return self.finality[state]
 end
 
 function Automaton:addFinalState(state)
@@ -63,7 +74,7 @@ function Automaton:removeFinalState(state)
 end
 
 function Automaton:addTransition(from, to, symbol, label)
-    if (self.transitions[from] == nil) then
+    if (#self.transitions[from] == 0) then
         if (self.isDFA) then
             self.transitions[from] = {[symbol] = {[label] = to}}
         else 
@@ -71,11 +82,8 @@ function Automaton:addTransition(from, to, symbol, label)
         end
     else 
         table.insert(self.transitions[from][symbol][label], to)
+        table.insert(self.transitions_raw, Transition:new(from, to, symbol, label))
     end
-end
-
-function Automaton:print()
-
 end
 
 function Transition:initialize(from, to, symbol, label)
