@@ -3,8 +3,17 @@ local Automaton = require("src/model/automaton")
 
 eps = Automaton.eps
 
+
+function copy_transitions(tr)
+    local res = {}
+    for k, v in pairs(tr) do
+        table.insert(res, Automaton.Transition(v.from, v.to, v.symbol))
+    end
+    return res
+end
+
 function transitions_increase_by_value(transitions, value)
-    local tr = transitions
+    local tr = copy_transitions(transitions)
     for k, v in pairs(tr) do
         v.from = v.from + value
         v.to = v.to + value
@@ -13,11 +22,10 @@ function transitions_increase_by_value(transitions, value)
 end
 
 function automatons_concat(m1, m2)
-    local transitionsM1 = m1.transitions_raw
-    local transitionsM2 = m2.transitions_raw
+    local transitionsM1 = copy_transitions(m1.transitions_raw)
+    local transitionsM2 = copy_transitions(m2.transitions_raw)
     local lenM1 = m1.states
     local lenM2 = m2.states
-
     transitionsM2 = transitions_increase_by_value(transitionsM2, lenM1 - 1)
     local M2_initial_neighbours = m2:allTransitions(lenM1)
     local transitions = transitionsM1
@@ -37,9 +45,9 @@ function automatons_alt(m1, m2)
     local m2stateNumber = m2.states
     local stateNumber = m1stateNumber + m2stateNumber + 2
 
-    local m1tr = m1.transitions_raw
+    local m1tr = copy_transitions(m1.transitions_raw)
     m1tr = transitions_increase_by_value(m1tr, 1)
-    local m2tr = m2.transitions_raw
+    local m2tr = copy_transitions(m2.transitions_raw)
     m2tr = transitions_increase_by_value(m2tr, m1stateNumber + 1)
     local tr = {}
     table.insert(tr, Automaton.Transition:new(1, 2, eps))
@@ -56,7 +64,7 @@ function automatons_alt(m1, m2)
 end
 
 function automatons_iter(m, positive)
-    local tr = m.transitions_raw
+    local tr = copy_transitions(m.transitions_raw)
     local statesNumber = m.states + 2
     tr = transitions_increase_by_value(tr, 1)
     table.insert(tr, Automaton.Transition:new(1, 2, eps))
