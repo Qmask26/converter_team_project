@@ -65,12 +65,8 @@ function Automaton:isStateFinal(state)
     return self.finality[state]
 end
 
-function Automaton:addFinalState(state)
-    self.finality[state] = true
-end
-
-function Automaton:removeFinalState(state)
-    self.finality[state] = false
+function Automaton:changeStateFinality(state)
+    self.finality[state] = not self.finality[state]
 end
 
 function Automaton:addTransition(from, to, symbol, label)
