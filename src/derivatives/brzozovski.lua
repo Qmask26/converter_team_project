@@ -81,3 +81,11 @@ function brzozovski_derivative(symbol, regex_node)
 	end
 	return res
 end
+
+function brzozovski_derivative_word(word, regex_node)
+	local res = regex_node
+	local i
+	for i = 1, #word do
+		symbol = string.sub(word, i, i)
+	end
+end
