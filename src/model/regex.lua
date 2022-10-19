@@ -8,7 +8,8 @@ Regex_module.operations = {
     alt = 1,
     iter = 2,
     symbol = 3,
-    empty_set = 4
+    empty_set = 4,
+    positive = 5
 }
 
 bytes = {
@@ -49,6 +50,8 @@ function RegexNode:initialize(regex, parse)
             self.secondChild = secondChild
         end
     end
+
+    print(self.value_for_print, self.type)
 end
 
 function parseRegexNodeAttributes(regex)
