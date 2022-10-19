@@ -50,8 +50,6 @@ function RegexNode:initialize(regex, parse)
             self.secondChild = secondChild
         end
     end
-
-    print(self.value_for_print, self.type)
 end
 
 function parseRegexNodeAttributes(regex)
