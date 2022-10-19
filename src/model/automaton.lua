@@ -14,6 +14,7 @@ function Automaton:initialize(statesNumber, finalStates, transitions, isDFA)
     self.states = statesNumber
     self.transitions = {}
     self.transitions_raw = transitions
+    self.final_states_raw = finalStates
     self.finality = {}
 
     for i = 1, statesNumber, 1 do
@@ -80,6 +81,15 @@ function Automaton:addTransition(from, to, symbol, label)
         table.insert(self.transitions[from][symbol][label], to)
         table.insert(self.transitions_raw, Transition:new(from, to, symbol, label))
     end
+end
+
+
+function Automaton:inverse()
+    local transitions_inversed = {}
+    for k, v in pairs(self.transitions_raw) do
+        table.insert(transitions_inversed, Transition:new(v.to, v.from, v.symbol, v.label))
+    end
+    return Automaton:new(self.states, self.final_states_raw, transitions_inversed, self.isDFA)
 end
 
 function Transition:initialize(from, to, symbol, label)
