@@ -33,3 +33,6 @@ print("Test Thompson automaton Th(R)")
 r = Regex.Regex:new("(((a|(c|d)*)|bc)*)")
 r1 = Regex.Regex:new("(a|b*)")
 a = create_thompson_automaton(r1)
+for k, v in pairs(a.transitions_raw) do
+    print(v.from, v.symbol, v.to)
+end

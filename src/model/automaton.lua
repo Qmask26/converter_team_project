@@ -1,4 +1,5 @@
 local class = require("src/model/middleclass")
+require("src/utils/common")
 
 Automaton_module = {}
 
@@ -30,7 +31,7 @@ function Automaton:initialize(statesNumber, finalStates, transitions, isDFA)
 
     for i = 1, #transitions, 1 do
         t = transitions[i]
-        if (#self.transitions[t.from] == 0) then
+        if (table.length(self.transitions[t.from]) == 0) then
             if (self.isDFA) then
                 self.transitions[t.from] = {[t.symbol] = {[t.label] = t.to}}
             else 
@@ -72,7 +73,7 @@ function Automaton:changeStateFinality(state)
 end
 
 function Automaton:addTransition(from, to, symbol, label)
-    if (#self.transitions[from] == 0) then
+    if (table.length(self.transitions[from]) == 0) then
         if (self.isDFA) then
             self.transitions[from] = {[symbol] = {[label] = to}}
         else 
