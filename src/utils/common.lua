@@ -26,3 +26,11 @@ function table_tostring(table)
     s = string.sub(s, 0, #s-2) .. "}"
     return s
 end
+
+function copy_table(tbl)
+    local copy = {}
+    for k, v in pairs(tbl) do
+        table.insert(copy, v)
+    end
+    return copy
+end

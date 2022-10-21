@@ -110,6 +110,7 @@ local function closure(z, nfa)
 end
 
 function Det(nfa)
+    print('det')
     Q = {}
     F = {}
     S = {}
