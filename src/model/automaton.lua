@@ -8,7 +8,7 @@ Transition = class("Transition")
 
 Automaton_module.eps = "_epsilon_"
 
-function Automaton:initialize(statesNumber, finalStates, transitions, isDFA)
+function Automaton:initialize(statesNumber, finalStates, transitions, isDFA, startStates)
     if (isDFA == nil) then
         self.isDFA = false
     else 
@@ -18,6 +18,7 @@ function Automaton:initialize(statesNumber, finalStates, transitions, isDFA)
     self.transitions = {}
     self.transitions_raw = transitions
     self.final_states_raw = finalStates
+    self.start_states_raw = startStates
     self.finality = {}
 
     for i = 1, statesNumber, 1 do
@@ -98,7 +99,7 @@ function Automaton:inverse()
     for k, v in pairs(self.transitions_raw) do
         table.insert(transitions_inversed, Transition:new(v.to, v.from, v.symbol, v.label))
     end
-    return Automaton:new(self.states, self.final_states_raw, transitions_inversed, self.isDFA)
+    return Automaton:new(self.states, self.start_states_raw, transitions_inversed, self.isDFA, self.final_states_raw)
 end
 
 function Automaton:tostring()
