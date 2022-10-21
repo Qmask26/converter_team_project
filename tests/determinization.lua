@@ -1,7 +1,7 @@
 local Automaton = require("src/model/automaton")
 require "src/automaton_functions/determinization"
 
-local statesNumber = 6
+local statesNumber = 7
 local finalStates = {6}
 local transitions = {
     {from = 1, symbol = "_epsilon_", to = 2, label = ""},
@@ -14,8 +14,9 @@ local transitions = {
     {from = 5, symbol = 'a', to = 3, label = ""},
     {from = 3, symbol = "_epsilon_", to = 6, label = ""}
 }
-local nfa = Automaton.Automaton:new(6, finalStates, transitions, false)
+local nfa = Automaton.Automaton:new(6, finalStates, transitions, false, {1})
 local dfa = Det(nfa)
+
 print("isDFA:", dfa.isDFA)
 print("States:", dfa.states)
 io.write("Finals: ")
@@ -23,8 +24,13 @@ for i = 1, dfa.states, 1 do
     if dfa.finality[i] then io.write(i, " ") end
 end
 print()
+io.write("Start: ")
+for i = 1, #dfa.start_states_raw, 1 do
+    io.write(dfa.start_states_raw[i], " ")
+end
+print()
 print("Transitions:(from, symbol, to, label)")
 for i = 1, #dfa.transitions_raw, 1 do
-    print("\t",dfa.transitions_raw[i].from, dfa.transitions_raw[i].symbol, dfa.transitions_raw[i].to, dfa.transitions_raw[i].label)
+    print(dfa.transitions_raw[i].from, dfa.transitions_raw[i].symbol, dfa.transitions_raw[i].to, dfa.transitions_raw[i].label)
 end
 
