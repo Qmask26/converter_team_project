@@ -1,27 +1,42 @@
 local Automaton_module = require("src/model/automaton")
 require "src/automaton_functions/determinization"
-require "src/automaton_functions/inverse"
 
 local Automaton = Automaton_module.Automaton
 local Transition = Automaton_module.Transition
 
-local transitions = {
-    Transition:new(1, 2, 'a'),
-    Transition:new(1, 3, 'a'), 
-    Transition:new(1, 3, 'b'),
-    Transition:new(3, 2, 'a'),
+-- local transitions = {
+--     Transition:new(1, 2, 'a'),
+--     Transition:new(1, 3, 'a'), 
+--     Transition:new(1, 3, 'b'),
+--     Transition:new(3, 2, 'a'),
+--     Transition:new(2, 3, 'a'),
+--     Transition:new(3, 3, 'a'),
+--     Transition:new(2, 4, 'b'),
+--     Transition:new(3, 4, 'b')
+-- }
+
+
+-- local automaton = Automaton:new(4, {4}, transitions, false, {1})
+
+
+local transitions_inversed = {
+    Transition:new(2, 1, 'a'),
+    Transition:new(3, 1, 'a'), 
+    Transition:new(3, 1, 'b'),
     Transition:new(2, 3, 'a'),
+    Transition:new(3, 2, 'a'),
     Transition:new(3, 3, 'a'),
-    Transition:new(2, 4, 'b'),
-    Transition:new(3, 4, 'b')
+    Transition:new(4, 2, 'b'),
+    Transition:new(4, 3, 'b')
 }
 
 
-local automaton = Automaton:new(4, {4}, transitions, false, {1})
+local automaton_inversed = Automaton:new(4, {1}, transitions_inversed, false, {4})
 
 
--- local minimized = Det(inverse(Det(inverse(automaton))))
-local minimized = Det(inverse(automaton))
+-- local minimized = Det(Det(automaton:inverse()):inverse())
+-- local minimized = Det(automaton:inverse())
+local minimized = Det(automaton_inversed)
 
 
 

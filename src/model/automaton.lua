@@ -9,17 +9,6 @@ Transition = class("Transition")
 Automaton_module.eps = "_epsilon_"
 
 function Automaton:initialize(statesNumber, finalStates, transitions, isDFA, startStates)
-    print("isDFA:", isDFA)
-    print("States:", statesNumber)
-    io.write("Finals: ")
-    for i = 1, statesNumber, 1 do
-        if finalStates[i] then io.write(i, " ") end
-    end
-    print()
-    print("Transitions:(from, symbol, to, label)")
-    for i = 1, #transitions, 1 do
-        print("\t",transitions[i].from, transitions[i].symbol, transitions[i].to, transitions[i].label)
-    end
     if (isDFA == nil) then
         self.isDFA = false
     else 
