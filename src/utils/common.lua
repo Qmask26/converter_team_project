@@ -6,3 +6,23 @@ function table.length(arr)
     end
     return size
 end
+
+function table_tostring_as_array(table) 
+    local k, v
+    local s = "["
+    for k, v in pairs(table) do
+        s = s .. tostring(v) .. ", "
+    end
+    s = string.sub(s, 0, #s-2) .. "]"
+    return s
+end
+
+function table_tostring(table)
+    local k, v
+    local s = "{"
+    for k, v in pairs(table) do
+        s = s .. tostring(k) .. ": " .. tostring(v) .. ", "
+    end
+    s = string.sub(s, 0, #s-2) .. "}"
+    return s
+end
