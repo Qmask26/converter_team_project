@@ -1,9 +1,12 @@
 local class = require("src/model/middleclass")
+require("src/utils/common")
 
 Automaton_module = {}
 
 Automaton = class("Automaton")
 Transition = class("Transition")
+
+Automaton_module.eps = "_epsilon_"
 
 function Automaton:initialize(statesNumber, finalStates, transitions, isDFA)
     if (isDFA == nil) then
@@ -29,11 +32,17 @@ function Automaton:initialize(statesNumber, finalStates, transitions, isDFA)
 
     for i = 1, #transitions, 1 do
         t = transitions[i]
-        if (#self.transitions[t.from] == 0) then
+        if (table.length(self.transitions[t.from]) == 0) then
             if (self.isDFA) then
                 self.transitions[t.from] = {[t.symbol] = {[t.label] = t.to}}
             else 
                 self.transitions[t.from] = {[t.symbol] = {[t.label] = {t.to}}}
+            end
+        elseif self.transitions[t.from][t.symbol] == nil then
+            if (self.isDFA) then
+                self.transitions[t.from][t.symbol] = {[t.label] = t.to}
+            else 
+                self.transitions[t.from][t.symbol] = {[t.label] = {t.to}}
             end
         else 
             table.insert(self.transitions[t.from][t.symbol][t.label], t.to)
@@ -71,7 +80,7 @@ function Automaton:changeStateFinality(state)
 end
 
 function Automaton:addTransition(from, to, symbol, label)
-    if (#self.transitions[from] == 0) then
+    if (table.length(self.transitions[from]) == 0) then
         if (self.isDFA) then
             self.transitions[from] = {[symbol] = {[label] = to}}
         else 
@@ -91,6 +100,37 @@ function Automaton:inverse()
     end
     return Automaton:new(self.states, self.final_states_raw, transitions_inversed, self.isDFA)
 end
+
+function Automaton:tostring()
+    local res = ""
+    res = res .. "is DFA: " .. tostring(self.isDFA) .. "\n"
+    res = res .. "Number of states: " .. tostring(self.states) .. "\n"
+    res = res .. "Final states: "
+    for k, v in pairs(self.finality) do
+        if v then
+            res = res .. tostring(k) .. ", " 
+        end
+    end
+    res = string.sub(res, 0, #res-2) .. "\n"
+    res = res .. "Transitions (from -- symbol -- label --> to):\n"
+
+    local ind_from, table_symbols, symbol, table_labels, label
+    for ind_from, table_symbols in pairs(self.transitions) do
+        for symbol, table_labels in pairs(table_symbols) do
+            for label, to in pairs(table_labels) do
+                if self.isDFA then
+                    res = res .. tostring(ind_from) .. " -- " .. tostring(symbol) .. " -- "
+                    res = res .. tostring(label) .. " --> " .. tostring(to) .. "\n"
+                else
+                    res = res .. tostring(ind_from) .. " -- " .. tostring(symbol) .. " -- "
+                    res = res .. tostring(label) .. " --> " .. table_tostring_as_array(to) .. "\n"
+                end
+            end
+        end
+    end
+    return res
+end
+
 
 function Transition:initialize(from, to, symbol, label)
     self.from = from
