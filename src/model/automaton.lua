@@ -14,11 +14,15 @@ function Automaton:initialize(statesNumber, finalStates, transitions, isDFA, sta
     else 
         self.isDFA = isDFA
     end
+    if (startStates == nil) then
+        self.start_states_raw = {1}
+    else 
+        self.start_states_raw = startStates
+    end
     self.states = statesNumber
     self.transitions = {}
     self.transitions_raw = transitions
     self.final_states_raw = finalStates
-    self.start_states_raw = startStates
     self.finality = {}
 
     for i = 1, statesNumber, 1 do
