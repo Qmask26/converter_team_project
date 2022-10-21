@@ -1,8 +1,7 @@
 local class = require("src/model/middleclass")
 local Automaton = require("src/model/automaton")
-local Transition 
 
--- structures
+-- структуры
 
 tr = {}
 
@@ -14,7 +13,7 @@ function stack.pop()
     return table.remove(stack)
 end
 
--- utilitis
+-- вспомогательные функции
 
 local function contains(q, C)
     local check = false
@@ -32,7 +31,7 @@ local function contains(q, C)
 end
 
 local function isEqual(a, b)
-    local acc
+    local acc 
     if type(a) == "number" and type(b) == "number" then return a == b end
     if type(b) == "number" then acc = {b} else acc = b end
     if #a ~= #acc then return false end
@@ -62,7 +61,7 @@ local function getAlphabet(nfa)
     local trans = nfa.transitions_raw
     local alph = {}
     for i = 1, #trans, 1 do
-        if trans[i].symbol == '' then goto continue end
+        if trans[i].symbol == "_epsilon_" then goto continue end
         local check = false
         for j = 1, #alph, 1 do
             check = alph[j] == trans[i].symbol
@@ -76,7 +75,7 @@ local function getAlphabet(nfa)
     return alph
 end
 
--- main functions
+-- основные функции
 
 local function dfs(nfa, q, C)
     local check = false
@@ -86,8 +85,8 @@ local function dfs(nfa, q, C)
     end
     if check == false then 
         table.insert(C, q)
-        if nfa.transitions[q][''] ~= nil then
-            local trarr = nfa.transitions[q][''][""]
+        if nfa.transitions[q]["_epsilon_"] ~= nil then
+            local trarr = nfa.transitions[q]["_epsilon_"][""]
             for i = 1, #trarr, 1 do
                 dfs(nfa, trarr[i], C)
             end
@@ -121,13 +120,10 @@ function Det(nfa)
         end
         for i = 1, #X, 1 do
             local trarr = {}
-            print(X[i])
             for j = 1, #z, 1 do
                 local collect = transition(nfa, z[j], X[i])
-                print(#collect, collect[1], collect[2])
                 if collect ~= nil then mergeTables(trarr, collect) end
             end
-            print(trarr[1], trarr[2], trarr[3], trarr[4])
 
             local z1 = closure(trarr, nfa)
             
@@ -136,39 +132,26 @@ function Det(nfa)
                 stack.push(z1)
             end
             if #z1 ~= 0 then
-                table.insert(tr, {from = z, to = z1, symbol = X[i]})
+                table.insert(tr, {from = z, to = z1, symbol = X[i], label = ""})
             end
         end
     end
-
-    io.write("States\n")
+    -- Сборка автомата
+    local rename = {}
     for i = 1, #Q, 1 do
-        io.write("state", i, " ")
-        for j = 1, #Q[i], 1 do
-            io.write(Q[i][j], " ")
-        end
-        io.write("\n")
+        rename[i] = Q[i]
+        Q[i] = i 
     end
-    io.write("Finals\n")
     for i = 1, #F, 1 do
-        for j = 1, #F[i], 1 do
-            io.write(F[i][j], " ")
+        for j = 1, #rename, 1 do
+            if isEqual(rename[j], F[i]) then F[i] = j break end
         end
-        print()
     end
-    io.write("\nAlphabet\n")
-    for i = 1, #X, 1 do
-        io.write(X[i], " ")
-    end
-    io.write("\nTransitions\n")
     for i = 1, #tr, 1 do
-        for j = 1, #tr[i].from, 1 do
-            io.write(tr[i].from[j], " ")
+        for j = 1, #rename, 1 do
+            if isEqual(rename[j], tr[i].from) then tr[i].from = j end
+            if isEqual(rename[j], tr[i].to) then tr[i].to = j end
         end
-        io.write(tr[i].symbol, "-> ") 
-        for j = 1, #tr[i].to, 1 do
-            io.write(tr[i].to[j], " ")
-        end
-        print()
     end
+    return Automaton.Automaton:new(#Q, F, tr, true)
 end
