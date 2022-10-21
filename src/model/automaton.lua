@@ -91,6 +91,37 @@ function Automaton:addTransition(from, to, symbol, label)
     end
 end
 
+function Automaton:tostring()
+    local res = ""
+    res = res .. "is DFA: " .. tostring(self.isDFA) .. "\n"
+    res = res .. "Number of states: " .. tostring(self.states) .. "\n"
+    res = res .. "Final states: "
+    for k, v in pairs(self.finality) do
+        if v then
+            res = res .. tostring(k) .. ", " 
+        end
+    end
+    res = string.sub(res, 0, #res-2) .. "\n"
+    res = res .. "Transitions (from -- symbol -- label --> to):\n"
+
+    local ind_from, table_symbols, symbol, table_labels, label
+    for ind_from, table_symbols in pairs(self.transitions) do
+        for symbol, table_labels in pairs(table_symbols) do
+            for label, to in pairs(table_labels) do
+                if self.isDFA then
+                    res = res .. tostring(ind_from) .. " -- " .. tostring(symbol) .. " -- "
+                    res = res .. tostring(label) .. " --> " .. tostring(to) .. "\n"
+                else
+                    res = res .. tostring(ind_from) .. " -- " .. tostring(symbol) .. " -- "
+                    res = res .. tostring(label) .. " --> " .. table_tostring_as_array(to) .. "\n"
+                end
+            end
+        end
+    end
+    return res
+end
+
+
 function Transition:initialize(from, to, symbol, label)
     self.from = from
     self.to = to
