@@ -1,4 +1,3 @@
-local class = require("src/model/middleclass")
 local Regex = require("src/model/regex")
 local Automaton = require("src/model/automaton")
 require("src/r2nfa_converter/utils")
