@@ -1,4 +1,3 @@
-local class = require("src/model/middleclass")
 local Regex = require("src/model/regex")
 local Automaton = require("src/model/automaton")
 local Set = require("src/model/set")
@@ -54,17 +53,3 @@ function create_antimirov_automaton(regex)
     return Automaton.Automaton(statesNumber, final, tr)
 end
 
-
-
-local r = Regex.Regex:new("(ab|b)*ba")
--- print(r.alphabet:str())
--- local root = r.root
--- local deriv = antimirov_derivative("a", root)
-
--- local d = antimirov_derivative("b", root)
--- print(d:str())
--- print(deriv:str())
-
-a = create_antimirov_automaton(r)
-
-print(a:tostring())
