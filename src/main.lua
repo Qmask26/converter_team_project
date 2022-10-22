@@ -3,18 +3,20 @@ if (#arg == 1 or arg[1] ~= "-d" and arg[1] ~= "-s") then
     print(#arg)
     return
 elseif (arg[1] == "-s") then
-    typechecker = require("typechecker/static")
+    typechecker = require("src/typecheck/static")
 elseif (arg[1] == "-d") then
-    typechecker = require("typechecker/dynamic")
+    typechecker = require("src/typecheck/dynamic")
 end
+parser = require("src/utils/input_parser")
 
-io.input(arg[2])
-inputFile = io.open(arg[2], "r")
-outputFile = io.open("output.txt", "w")
-
-
---InputParser = require("parser/input_parser")
---input = InputParser:parseInput()
-
---identifiers = input.identifiers
---operations = input.operations
+typechecker:typecheck(arg[2])
+expressions = parser:parse(arg[2])
+print(#expressions)
+for _, v in pairs(expressions) do
+    if (v == nil) then
+        print("nil")
+    else
+        print("Computing", v.value.name)
+        v.value:compute()
+    end
+end

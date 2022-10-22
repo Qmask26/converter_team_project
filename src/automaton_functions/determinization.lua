@@ -182,3 +182,5 @@ function Det(nfa)
     end
     return Automaton.Automaton:new(#Q, F, tr, true, S)
 end
+
+return Det

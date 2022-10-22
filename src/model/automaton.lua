@@ -98,13 +98,6 @@ function Automaton:addTransition(from, to, symbol, label)
 end
 
 
-function Automaton:inverse()
-    local transitions_inversed = {}
-    for k, v in pairs(self.transitions_raw) do
-        table.insert(transitions_inversed, Transition:new(v.to, v.from, v.symbol, v.label))
-    end
-    return Automaton:new(self.states, self.start_states_raw, transitions_inversed, self.isDFA, self.final_states_raw)
-end
 
 function Automaton:tostring()
     local res = ""
