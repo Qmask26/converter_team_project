@@ -1,4 +1,5 @@
 local class = require("src/model/middleclass")
+local Set = require("src/model/set")
 
 Regex_module = {}
 
@@ -26,7 +27,23 @@ RegexNode = class("RegexNode")
 
 --Класс Regex имеет единственное поле - root, корень дерева, представляющего regex
 function Regex:initialize(regex)
-    self.root = RegexNode:new(regex, true)
+    self.root = RegexNode:new(regex, #regex ~= 0)
+    self.alphabet = parseNodeAlphabet(self.root)
+end
+
+function parseNodeAlphabet(regex)
+    if regex.type == Regex_module.operations.symbol then
+        local res = Set:new({regex.value})
+        return res
+    elseif regex.nchildren == 1 then
+        local res = parseNodeAlphabet(regex.firstChild)
+        return res
+    else
+        local res1 = parseNodeAlphabet(regex.firstChild)
+        local res2 = parseNodeAlphabet(regex.secondChild)
+        res2:union(res1)
+        return res2
+    end
 end
 
 --Класс RegexNode представляет собой вершину в дереве, представляющее regex
@@ -40,6 +57,8 @@ function RegexNode:initialize(regex, parse)
     self.value_for_print = self.value
     if (self.value == "") then
         self.value_for_print = "_epsilon_"
+        self.type = Regex_module.empty_set
+        self.nchildren = 0
     end
     if parse then
         self.type, self.nchildren, firstChild, secondChild = parseRegexNodeAttributes(regex)
