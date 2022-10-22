@@ -1,9 +1,14 @@
+Automaton_functions = require("src/automaton_functions/module")
+Derivatives = require("src/derivatives/module")
+r2nfa = require("src/r2nfa_converter/module")
 --Все возможные функции преобразователя с типами их аргументов и возвращаемого значения
 --argNum - количество аргументовф
 --first - первый аргумент
 --second - второй аргумент (может отсутсвовать)
 --third - есть только у Test
 --result - результат вычисления
+
+
 
 local DATA_TYPES = {
     Regex = 3,
@@ -258,9 +263,31 @@ local CONVETER_FUNCTIONS = {
     }
 }
 
+setmetatable(CONVETER_FUNCTIONS.Thompson, {
+    _call = r2nfa.Thompson
+})
+
+setmetatable(CONVETER_FUNCTIONS.Determinize, {
+    _call = Automaton_functions.Determinize
+})
+
+setmetatable(CONVETER_FUNCTIONS.Minimize, {
+    _call = Automaton_functions.Minimize
+})
+
+setmetatable(CONVETER_FUNCTIONS.Reverse, {
+    _call = Automaton_functions.Reverse
+})
+
+setmetatable(CONVETER_FUNCTIONS.Antimirov, {
+    _call = Derivatives.Antimirov
+})
+
 for key, value in pairs(CONVETER_FUNCTIONS) do
-    setmetatable(value, {__call = function () 
-    print("*COMPUTED*", key)  end})
+    if (value.__call == nil) then
+        setmetatable(value, {__call = function () 
+        print("*COMPUTED*", key)  end})
+    end
 end
 
 Metadata = {

@@ -6,3 +6,5 @@ function minimization(automaton)
     print("test")
 end
 
+
+return minimization

@@ -44,3 +44,5 @@ function antimirov_derivative(symbol, regex_node)
 	end
 	return res
 end
+
+return antimirov_derivative

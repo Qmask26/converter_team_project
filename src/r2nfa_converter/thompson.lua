@@ -26,3 +26,5 @@ function thompson_algorithm(reg)
     else
     end
 end
+
+return thompson_algorithm
