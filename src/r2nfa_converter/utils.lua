@@ -1,5 +1,5 @@
 local Automaton = require("src/model/automaton")
-
+require("src/utils/common")
 
 eps = Automaton.eps
 
@@ -76,3 +76,18 @@ function automatons_iter(m, positive)
     return Automaton.Automaton:new(statesNumber, {statesNumber}, tr)
 end
 
+function is_transition_in_table(transition, arr)
+    if arr == nil or table.length(arr) == 0 then
+        return false
+    end
+    for _, tr in pairs(arr) do
+        local tmp = {}
+        for _, v in pairs(tr) do
+            table.insert(tmp, v)
+        end
+        if tmp[1] == transition[1] and tmp[2] == transition[2] and tmp[3] == transition[3] then
+            return true
+        end
+    end
+    return false
+end

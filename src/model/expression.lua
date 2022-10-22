@@ -28,22 +28,29 @@ function Computable:initialize(name, type, arg1, arg2)
     self.type = type
     self.arg1 = arg1
     self.arg2 = arg2
-    if (self.type == computableType.integer) then
+    if (self.type == computableType.Int) then
         self.value = tonumber(self.name)
-    elseif (self.type == computableType.regex) then
+    elseif (self.type == computableType.Regex) then
         self.value = RM.Regex:new(self.name)
     end
 end
 
 function Computable:compute()
-    if (self.type == computableType.func) then
-        if (arg2 == nil) then
-            self.value = funcList[self.name](self.arg1:compute())
-        else
-            self.value = funcList[self.name](self.arg1:comute(), self.arg2:compute())
+    print(self.name, self.type, self.value)
+    if (self.value == nil) then
+        if (self.type == computableType.func) then
+            if (self.arg2 == nil) then
+                self.value = funcList.functions[self.name](self.arg1:compute())
+            else
+                if (self.arg2 ~= nil) then
+                    self.value = funcList.functions[self.name](self.arg1:compute(), self.arg2:compute())
+                else 
+                    self.value = funcList.functions[self.name](self.arg1:compute())
+                end
+            end
+        elseif (self.type == computableType.variable) then
+            self.value = self.arg1:compute()
         end
-    elseif (self.type == computableType.variable) then
-        self.value = self.arg1:compute()
     end
     return self.value
 end
@@ -52,7 +59,6 @@ function Test:initialize(arg1, arg2, arg3)
     self.arg1 = arg1
     self.arg2 = arg2
     self.arg3 = arg3
-    print(arg1.name, arg2.name, arg3.name)
 end
 
 function Test:execute()

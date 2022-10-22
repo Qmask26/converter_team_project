@@ -2,6 +2,7 @@ local Regex = require("src/model/regex")
 local Automaton = require("src/model/automaton")
 local eps = Automaton.eps
 require("src/r2nfa_converter/thompson")
+require("src/r2nfa_converter/antimirov")
 require("src/r2nfa_converter/utils")
 
 -- src/r2nfa_converter/utils
@@ -28,11 +29,21 @@ local iter = automatons_iter(a2, true)
 --     print(v.from, v.symbol, v.to)
 -- end
 
+
 -- src/r2nfa_converter
 print("Test Thompson automaton Th(R)")
-r = Regex.Regex:new("(((a|(c|d)*)|bc)*)")
-r1 = Regex.Regex:new("(a|b*)")
-a = create_thompson_automaton(r1)
-for k, v in pairs(a.transitions_raw) do
-    print(v.from, v.symbol, v.to)
-end
+local r = Regex.Regex:new("(((a|(c|d)*)|bc)*)")
+local r1 = Regex.Regex:new("(a|b*)")
+local a = create_thompson_automaton(r1)
+-- for k, v in pairs(a.transitions_raw) do
+--     print(v.from, v.symbol, v.to)
+-- end
+
+
+print("Test Antimirov automaton")
+local r = Regex.Regex:new("(ab|b)*ba")
+-- print(r.alphabet:str())
+
+a = create_antimirov_automaton(r)
+
+-- print(a:tostring())
