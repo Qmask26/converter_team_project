@@ -8,7 +8,6 @@ local Automaton_module = require("src/model/automaton")
 local Automaton = Automaton_module.Automaton
 
 function inverse(automaton)
-    print('inv')
     local transitions_inversed = {}
     for k, v in pairs(automaton.transitions_raw) do
         table.insert(transitions_inversed, Transition:new(v.to, v.from, v.symbol, v.label))

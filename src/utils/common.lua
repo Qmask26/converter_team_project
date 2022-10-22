@@ -31,6 +31,10 @@ function copy_table(tbl)
     local copy = {}
     for k, v in pairs(tbl) do
         table.insert(copy, v)
+    end
+    return copy
+end
+
 function shallowcopy(orig)
     local orig_type = type(orig)
     local copy

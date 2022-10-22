@@ -32,6 +32,11 @@ for i = 1, minimized.states, 1 do
     if minimized.finality[i] then io.write(i, " ") end
 end
 print()
+io.write("Starts: ")
+for i = 1, #minimized.start_states_raw, 1 do
+    if minimized.start_states_raw[i] then io.write(i, " ") end
+end
+print()
 print("Transitions:(from, symbol, to, label)")
 for i = 1, #minimized.transitions_raw, 1 do
     print("\t",minimized.transitions_raw[i].from, minimized.transitions_raw[i].symbol, minimized.transitions_raw[i].to, minimized.transitions_raw[i].label)

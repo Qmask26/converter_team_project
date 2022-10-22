@@ -3,8 +3,6 @@ local Automaton = require("src/model/automaton")
 
 -- structures
 
-local tr = {}
-
 local stack = {}
 function stack.push(item)
     table.insert(stack, item) 
@@ -110,6 +108,7 @@ local function closure(z, nfa)
 end
 
 function Det(nfa)
+    local tr = {}
     Q = {}
     F = {}
     S = {}
@@ -146,7 +145,6 @@ function Det(nfa)
                 local collect = transition(nfa, z[j], X[i])
                 if collect ~= nil then mergeTables(trarr, collect) end
             end
-
             local z1 = closure(trarr, nfa)
             
             if z1 ~= nil and contains(z1, Q) == false then
@@ -180,7 +178,8 @@ function Det(nfa)
             if isEqual(rename[j], tr[i].to) and type(tr[i].to) ~= "number" then tr[i].to = j  end
         end
     end
-    return Automaton.Automaton:new(#Q, F, tr, true, S)
+    local automaton = Automaton.Automaton:new(#Q, F, tr, true, S)
+    return automaton
 end
 
 return Det
