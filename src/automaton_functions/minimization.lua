@@ -1,10 +1,7 @@
-local Set = require("src/model/set")
-local Automaton = require("src/model/automaton")
-
+require "src/automaton_functions/determinization"
+require "src/automaton_functions/inverse"
 
 function minimization(automaton)
-    print("test")
+    return Det(inverse(Det(inverse(automaton))))
 end
-
-
 return minimization

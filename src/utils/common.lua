@@ -27,6 +27,10 @@ function table_tostring(table)
     return s
 end
 
+function copy_table(tbl)
+    local copy = {}
+    for k, v in pairs(tbl) do
+        table.insert(copy, v)
 function shallowcopy(orig)
     local orig_type = type(orig)
     local copy
@@ -57,7 +61,7 @@ function deepcopy(orig, copies)
             setmetatable(copy, deepcopy(getmetatable(orig), copies))
         end
     else -- number, string, boolean, etc
-        copy = orig
+        copy = ori
     end
     return copy
 end
