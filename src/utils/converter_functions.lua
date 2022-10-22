@@ -267,6 +267,10 @@ setmetatable(CONVETER_FUNCTIONS.Thompson, {
     _call = r2nfa.Thompson
 })
 
+setmetatable(CONVETER_FUNCTIONS.Antimirov, {
+    _call = r2nfa.Antimirov
+})
+
 setmetatable(CONVETER_FUNCTIONS.Determinize, {
     _call = Automaton_functions.Determinize
 })
@@ -279,9 +283,8 @@ setmetatable(CONVETER_FUNCTIONS.Reverse, {
     _call = Automaton_functions.Reverse
 })
 
-setmetatable(CONVETER_FUNCTIONS.Antimirov, {
-    _call = Derivatives.Antimirov
-})
+
+
 
 for key, value in pairs(CONVETER_FUNCTIONS) do
     if (value.__call == nil) then

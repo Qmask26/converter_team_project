@@ -53,3 +53,5 @@ function create_antimirov_automaton(regex)
     return Automaton.Automaton(statesNumber, final, tr)
 end
 
+return create_antimirov_automaton
+
