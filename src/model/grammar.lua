@@ -1,4 +1,5 @@
 local class = require("src/model/middleclass")
+local Automaton = require("src/model/automaton")
 local Set = require("src/model/set")
 require("src/utils/common")
 
@@ -7,8 +8,9 @@ Grammar_module = {}
 Grammar = class("Grammar")
 
 function Grammar:initialize(automaton, isDFA)
-	self.terminals = Set:new({})
+	self.nonterm_prefix = "S"
 	self.nonterminals = Set:new({})
+	self.terminals = Set:new({})
 	self.rules = {}
 	if isDFA then
 		print('TODO')
@@ -20,29 +22,31 @@ end
 
 function Grammar:from_NFA(automaton)
     for state_from, table_symbols in pairs(automaton.transitions) do
-    	local state_from = tostring(state_from)
-    	self.nonterminals:add(state_from)
+    	local state_from_s = self.nonterm_prefix .. tostring(state_from)
+    	self.nonterminals:add(state_from_s)
         for symbol, table_labels in pairs(table_symbols) do
             local states_to = table_labels[""]
-            self.terminals:add(symbol)
-            if not self.rules[state_from] then self.rules[state_from] = {} end
+
+            if not (symbol == "" or symbol == Automaton.eps) then self.terminals:add(symbol) end
+            if not self.rules[state_from_s] then self.rules[state_from_s] = {} end
 
             for _, state_to in pairs(states_to) do
-            	local state_to = tostring(state_to)
-            	self.nonterminals:add(state_to)
-            	if automaton:isStateFinal(state_to) then
-            		table.insert(self.rules[state_from], {symbol})
-        		else
-        			table.insert(self.rules[state_from], {symbol, state_to})
-    			end
+            	local state_to_s = self.nonterm_prefix .. tostring(state_to)
+            	self.nonterminals:add(state_to_s)
+    			if symbol == "" or symbol == Automaton.eps then
+    				table.insert(self.rules[state_from_s], {state_to_s})
+				else
+    				table.insert(self.rules[state_from_s], {symbol, state_to_s})
+				end
         	end
         end
     end
 
     -- check final states and fill with empty table
     for state, is_final in pairs(automaton.finality) do
-    	if is_final and not key_in_table(state, self.rules) then 
-    		self.rules[state] = {{}}
+    	local state_s = self.nonterm_prefix .. tostring(state)
+    	if is_final and not key_in_table(state_s, self.rules) then 
+    		self.rules[state_s] = {{}}
     	end
 	end
 end
