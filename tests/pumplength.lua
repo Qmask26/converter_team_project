@@ -1,38 +1,54 @@
 local Regexs = require("src/model/regex")
+local Set = require("src/model/set")
 require "src/derivatives/brzozovski"
 require "src/r2nfa_converter/thompson"
 require "src/automaton_functions/determinization"
+require "src/utils/common"
 
-function table_to_str(table)
-	local k, v
-	local s = "{"
-	for k, v in pairs(table) do
-		s = s .. tostring(k) .. ": " .. tostring(v) .. ", "
-	end
-	s = string.sub(s, 0, #s-2) .. "}"
-	return s
+
+function string_startswith(s, prefix)
+	return s:find('^' .. prefix) ~= nil
 end
 
-local regex_s = Regexs.Regex:new("(a|b*)")
-local nfa = create_thompson_automaton(regex_s)
+function prefix_in_set(prefix, seen_prefixes) 
+	for item in pairs(seen_prefixes.items) do
+		if string_startswith(prefix, item) then
+			return true
+		end
+	end
+	return false
+end
+
+local rtree = Regexs.Regex:new("(a|b*)")
+local nfa = create_thompson_automaton(rtree)
 local dfa = Det(nfa)
-
-print(table_to_str(dfa.finality))
-for ind_from, table_symbols in pairs(dfa.transitions) do
-	for symbol, table_labels in pairs(table_symbols) do
-		local to = table_labels[""]
-		local is_final = dfa.finality[to]
-		print(ind_from, symbol, to, is_final)
-	end
-end
---[[
-local regex_s = "regex"
-local rtree = Regexs.RegexNode:new(regex_s, true)
 
 local i, j
 local n = 1
-while n >= 1 do
-	local prefix = string.sub(regex_s, 1, n) 
+local pumped_prefixes = Set:new({})
+local states_to_process = {{1, ''}}
+while n <=5 do
+	--get prefixes
+	local prefixes_to_process = {}
+	local new_states_to_process = {}
+	local c
+	for _, state_prefix_table in pairs(states_to_process) do
+		local state = state_prefix_table[1]
+		local prefix = state_prefix_table[2]
+		for symbol, labels_table in pairs(dfa.transitions[state]) do
+			local to = labels_table['']
+			local new_prefix = prefix .. symbol
+			if #new_prefix>0 and not prefix_in_set(new_prefix, pumped_prefixes) then
+				--pumped_prefixes:add(new_prefix)
+				table.insert(prefixes_to_process, new_prefix)
+				table.insert(new_states_to_process, {to, new_prefix})
+			end
+		end
+	end
+	states_to_process = new_states_to_process
+	print(table_tostring(prefixes_to_process))
+	n = n + 1
+	--[[
 	local deriv = brzozovski_derivative_word(prefix, rtree)
 	print(prefix, deriv.value)
 
@@ -48,5 +64,5 @@ while n >= 1 do
 		--print("Max n reached")
 		break
 	end
+	]]--
 end
---]]
