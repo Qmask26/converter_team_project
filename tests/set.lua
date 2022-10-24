@@ -1,4 +1,5 @@
 local Set = require("src/model/set")
+require "src/utils/common"
 
 function printv(v)
 	print(v)
@@ -19,3 +20,6 @@ print(s2:str())
 print('s1 union s2')
 s1:union(s2)
 print(s1:str())
+
+local s1 = Set:new({10,1,2,4,3})
+print(table_tostring_as_array(s1:toarray()))
