@@ -1,0 +1,4 @@
+N1 = Glushkov ((ab)*|a)*
+N2 = Width N1
+N3 = Reverse.MergeBisim.Reverse N1
+SemDet N3

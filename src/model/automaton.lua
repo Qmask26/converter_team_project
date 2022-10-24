@@ -8,15 +8,21 @@ Transition = class("Transition")
 
 Automaton_module.eps = "_epsilon_"
 
-function Automaton:initialize(statesNumber, finalStates, transitions, isDFA)
+function Automaton:initialize(statesNumber, finalStates, transitions, isDFA, startStates)
     if (isDFA == nil) then
         self.isDFA = false
     else 
         self.isDFA = isDFA
     end
+    if (startStates == nil) then
+        self.start_states_raw = {1}
+    else 
+        self.start_states_raw = startStates
+    end
     self.states = statesNumber
     self.transitions = {}
     self.transitions_raw = transitions
+    self.final_states_raw = finalStates
     self.finality = {}
 
     for i = 1, statesNumber, 1 do
@@ -90,6 +96,8 @@ function Automaton:addTransition(from, to, symbol, label)
         table.insert(self.transitions_raw, Transition:new(from, to, symbol, label))
     end
 end
+
+
 
 function Automaton:tostring()
     local res = ""

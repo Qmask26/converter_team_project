@@ -1,9 +1,7 @@
 local class = require("src/model/middleclass")
 local Automaton = require("src/model/automaton")
 
--- структуры
-
-tr = {}
+-- structures
 
 local stack = {}
 function stack.push(item)
@@ -13,7 +11,7 @@ function stack.pop()
     return table.remove(stack)
 end
 
--- вспомогательные функции
+-- utilities
 
 local function contains(q, C)
     local check = false
@@ -21,7 +19,10 @@ local function contains(q, C)
     for i = 1, #C, 1 do
         if #q ~= #C[i] then goto continue end
         for j = 1, #q, 1 do
-            check = q[j] == C[i][j]
+            for k = 1, #C[i], 1 do
+                check = q[j] == C[i][k]
+                if check == true then break end 
+            end
             if check == false then break end
         end 
         if check then return true end
@@ -35,8 +36,12 @@ local function isEqual(a, b)
     if type(a) == "number" and type(b) == "number" then return a == b end
     if type(b) == "number" then acc = {b} else acc = b end
     if #a ~= #acc then return false end
+    local check = false
     for i = 1, #a, 1 do
-        if a[i] ~= acc[i] then return false end        
+        for j = 1, #acc, 1 do
+            if a[i] == acc[j] then check = true break end  
+        end
+        if check == false then return false end      
     end
     return true
 end
@@ -75,7 +80,7 @@ local function getAlphabet(nfa)
     return alph
 end
 
--- основные функции
+-- main functions
 
 local function dfs(nfa, q, C)
     local check = false
@@ -103,11 +108,15 @@ local function closure(z, nfa)
 end
 
 function Det(nfa)
+    local tr = {}
     Q = {}
     F = {}
+    S = {}
     X = getAlphabet(nfa)
 
-    local q0 = closure({1}, nfa)
+    local start = nfa.start_states_raw[1]
+
+    local q0 = closure({start}, nfa)
     table.insert(Q, q0)
     stack.push(q0)
     while table.length(stack) ~= 2 do
@@ -118,13 +127,24 @@ function Det(nfa)
                 break
             end
         end
+        local isStart = false
+        for i = 1, #z, 1 do 
+            for j = 1, #nfa.start_states_raw, 1 do
+                if nfa.start_states_raw[j] == z[i] then
+                    table.insert(S, z)
+                    isStart = true
+                    break
+                end
+            end
+            if isStart then break end
+        end
+
         for i = 1, #X, 1 do
             local trarr = {}
             for j = 1, #z, 1 do
                 local collect = transition(nfa, z[j], X[i])
                 if collect ~= nil then mergeTables(trarr, collect) end
             end
-
             local z1 = closure(trarr, nfa)
             
             if z1 ~= nil and contains(z1, Q) == false then
@@ -136,7 +156,7 @@ function Det(nfa)
             end
         end
     end
-    -- Сборка автомата
+    -- automaton assembly
     local rename = {}
     for i = 1, #Q, 1 do
         rename[i] = Q[i]
@@ -147,11 +167,19 @@ function Det(nfa)
             if isEqual(rename[j], F[i]) then F[i] = j break end
         end
     end
-    for i = 1, #tr, 1 do
+    for i = 1, #S, 1 do
         for j = 1, #rename, 1 do
-            if isEqual(rename[j], tr[i].from) then tr[i].from = j end
-            if isEqual(rename[j], tr[i].to) then tr[i].to = j end
+            if isEqual(rename[j], S[i]) then S[i] = j break end
         end
     end
-    return Automaton.Automaton:new(#Q, F, tr, true)
+    for i = 1, #tr, 1 do
+        for j = 1, #rename, 1 do
+            if isEqual(rename[j], tr[i].from) and type(tr[i].from) ~= "number" then tr[i].from = j  end
+            if isEqual(rename[j], tr[i].to) and type(tr[i].to) ~= "number" then tr[i].to = j  end
+        end
+    end
+    local automaton = Automaton.Automaton:new(#Q, F, tr, true, S)
+    return automaton
 end
+
+return Det
