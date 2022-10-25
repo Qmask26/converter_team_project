@@ -25,19 +25,14 @@ local iter = automatons_iter(a2, false)
 -- Kleene plus
 local iter = automatons_iter(a2, true)
 
--- for k, v in pairs(iter.transitions_raw) do
---     print(v.from, v.symbol, v.to)
--- end
-
 
 -- src/r2nfa_converter
 print("Test Thompson automaton Th(R)")
 local r = Regex.Regex:new("(((a|(c|d)*)|bc)*)")
 local r1 = Regex.Regex:new("(a|b*)")
-local a = create_thompson_automaton(r1)
--- for k, v in pairs(a.transitions_raw) do
---     print(v.from, v.symbol, v.to)
--- end
+local r2 = Regex.Regex:new("(a|ba)*")
+local a = create_thompson_automaton(r2)
+print(a:tostring())
 
 
 print("Test Antimirov automaton")
