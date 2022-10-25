@@ -19,15 +19,17 @@ function prefix_in_set(prefix, seen_prefixes)
 	return false
 end
 
-local rtree = Regexs.Regex:new("(a|b*)")
+local rtree = Regexs.Regex:new("(a|ba)*")
 local nfa = create_thompson_automaton(rtree)
 local dfa = Det(nfa)
+
+print(nfa:tostring())
 
 local i, j
 local n = 1
 local pumped_prefixes = Set:new({})
 local states_to_process = {{1, ''}}
-while n <=5 do
+while n <= 4 do
 	--get prefixes
 	local prefixes_to_process = {}
 	local new_states_to_process = {}
@@ -40,7 +42,9 @@ while n <=5 do
 			local new_prefix = prefix .. symbol
 			if #new_prefix>0 and not prefix_in_set(new_prefix, pumped_prefixes) then
 				--pumped_prefixes:add(new_prefix)
-				table.insert(prefixes_to_process, new_prefix)
+				if dfa:isStateFinal(to) then
+					table.insert(prefixes_to_process, new_prefix)
+				end
 				table.insert(new_states_to_process, {to, new_prefix})
 			end
 		end
