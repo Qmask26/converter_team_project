@@ -39,11 +39,11 @@ function parseNodeAlphabet(regex, parse)
         local res = Set:new({regex.value})
         return res
     elseif regex.nchildren == 1 then
-        local res = parseNodeAlphabet(regex.firstChild)
+        local res = parseNodeAlphabet(regex.firstChild, true)
         return res
     else
-        local res1 = parseNodeAlphabet(regex.firstChild)
-        local res2 = parseNodeAlphabet(regex.secondChild)
+        local res1 = parseNodeAlphabet(regex.firstChild, true)
+        local res2 = parseNodeAlphabet(regex.secondChild, true)
         res2:union(res1)
         return res2
     end
