@@ -28,10 +28,13 @@ RegexNode = class("RegexNode")
 --Класс Regex имеет единственное поле - root, корень дерева, представляющего regex
 function Regex:initialize(regex)
     self.root = RegexNode:new(regex, #regex ~= 0)
-    self.alphabet = parseNodeAlphabet(self.root)
+    self.alphabet = parseNodeAlphabet(self.root, #regex ~= 0)
 end
 
-function parseNodeAlphabet(regex)
+function parseNodeAlphabet(regex, parse)
+    if not parse then
+        return Set:new({})
+    end
     if regex.type == Regex_module.operations.symbol then
         local res = Set:new({regex.value})
         return res
@@ -46,6 +49,26 @@ function parseNodeAlphabet(regex)
     end
 end
 
+function canParseEpsilon(regex)
+    return canParseEpsilonRec(regex.root)
+end
+
+function canParseEpsilonRec(regex)
+    if regex.type == Regex_module.operations.alt then
+        return canParseEpsilonRec(regex.firstChild) or canParseEpsilonRec(regex.secondChild)
+    elseif regex.type == Regex_module.operations.concat then
+        return canParseEpsilonRec(regex.firstChild) and canParseEpsilonRec(regex.secondChild)
+    elseif regex.type == Regex_module.operations.iter then
+        return true
+    elseif regex.type == Regex_module.operations.positive then
+        return canParseEpsilonRec(regex.firstChild)
+    elseif regex.type == Regex_module.operations.symbol then
+        return false
+    elseif regex.type == Regex_module.operations.empty_set then
+        return true
+    end
+end
+
 --Класс RegexNode представляет собой вершину в дереве, представляющее regex
 --Поле value хранит строку-подвыражение в regex
 --Поле value_for_print хранит строку-подвыражение в regex для вывода (отличие в epsilon, т.е. пустой строке)
@@ -57,7 +80,7 @@ function RegexNode:initialize(regex, parse)
     self.value_for_print = self.value
     if (self.value == "") then
         self.value_for_print = "_epsilon_"
-        self.type = Regex_module.empty_set
+        self.type = Regex_module.operations.empty_set
         self.nchildren = 0
     end
     if parse then
