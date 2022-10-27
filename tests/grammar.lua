@@ -5,7 +5,7 @@ require "src/r2nfa_converter/thompson"
 require "src/utils/common"
 require "src/predicates/predicates"
 
-local rtree1 = Regexs.Regex:new("(a|b*)|c*")
+local rtree1 = Regexs.Regex:new("(a|b*)")
 local nfa1 = create_thompson_automaton(rtree1)
 
 local rtree2 = Regexs.Regex:new("(a|b*)")
@@ -38,7 +38,7 @@ local transitions = {
 
 print('Bisimilar: ' .. tostring(Bisimilar(nfa1, nfa2)))
 print('Equal: ' .. tostring(Equal(nfa1, nfa2)))
-
+--print('Equiv: ' .. EquivNFA(nfa1, nfa2))
 --print('NFA')
 --print(nfa1:tostring())
 --print('Grammar')
