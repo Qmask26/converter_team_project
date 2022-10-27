@@ -1,13 +1,48 @@
 local Grammar = require("src/model/grammar")
 local Regexs = require("src/model/regex")
+local Automaton = require("src/model/automaton")
 require "src/r2nfa_converter/thompson"
 require "src/utils/common"
+require "src/predicates/predicates"
 
-local rtree = Regexs.Regex:new("(a|b*)")
-local nfa = create_thompson_automaton(rtree)
+local rtree1 = Regexs.Regex:new("(a|b*)")
+--local nfa1 = create_thompson_automaton(rtree1)
 
-local grammar = Grammar.Grammar:new(nfa, false)
-print('NFA')
-print(nfa:tostring())
-print('Grammar')
-print(grammar:tostring())
+local rtree2 = Regexs.Regex:new("(a|b*)")
+--local nfa2 = create_thompson_automaton(rtree2)
+
+--print(grammar1:tostring())
+--print(grammar2:tostring())
+
+--print(Bisimilar(nfa1, nfa2))
+
+local statesNumber = 5
+local finalStates = {4, 5}
+local transitions = {
+    {from = 1, symbol = "b", to = 2, label = ""},
+    {from = 1, symbol = 'b', to = 3, label = ""},
+    {from = 2, symbol = "a", to = 4, label = ""},
+    {from = 2, symbol = 'c', to = 5, label = ""},
+    {from = 3, symbol = 'a', to = 5, label = ""}
+}
+local nfa1 = Automaton.Automaton:new(5, finalStates, transitions, false, {1})
+
+local statesNumber = 5
+local finalStates = {4, 5}
+local transitions = {
+    {from = 1, symbol = "b", to = 2, label = ""},
+    {from = 1, symbol = 'b', to = 3, label = ""},
+    {from = 2, symbol = "a", to = 4, label = ""},
+    {from = 2, symbol = 'c', to = 4, label = ""},
+    {from = 3, symbol = 'a', to = 5, label = ""}
+}
+local nfa2 = Automaton.Automaton:new(5, finalStates, transitions, false, {1})
+
+print(Equal(nfa1, nfa2))
+
+--print('NFA')
+--print(nfa1:tostring())
+--print(nfa2:tostring())
+--print('Grammar')
+--print(grammar1:tostring())
+--print(grammar2:tostring())

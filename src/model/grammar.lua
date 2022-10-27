@@ -7,16 +7,34 @@ Grammar_module = {}
 
 Grammar = class("Grammar")
 
-function Grammar:initialize(automaton, isDFA)
-	self.nonterm_prefix = "S"
-	self.nonterminals = Set:new({})
-	self.terminals = Set:new({})
-	self.rules = {}
-	if isDFA then
-		print('TODO')
-		self:from_DFA(automaton)
+function Grammar:initialize(automaton, nonterm_prefix, isDFA, for_transit_grammar, reverse_grammar)
+	if for_transit_grammar then
+		self.nonterm_prefix = nonterm_prefix
+		self.nonterminals = Set:new({})
+		self.terminals = Set:new({})
+		self.rules = {}
+	elseif reverse_grammar then
+		self.nonterm_prefix = nonterm_prefix
+		self.nonterminals = Set:new({})
+		self.terminals = Set:new({})
+		self.rules = {}
+		if isDFA then
+			print('TODO')
+			self:from_DFA(automaton)
+		else
+			self:from_NFA_reverse(automaton)
+		end
 	else
-		self:from_NFA(automaton)
+		self.nonterm_prefix = nonterm_prefix
+		self.nonterminals = Set:new({})
+		self.terminals = Set:new({})
+		self.rules = {}
+		if isDFA then
+			print('TODO')
+			self:from_DFA(automaton)
+		else
+			self:from_NFA(automaton)
+		end
 	end
 end
 
@@ -49,6 +67,30 @@ function Grammar:from_NFA(automaton)
     		self.rules[state_s] = {{}}
     	end
 	end
+end
+
+function Grammar:from_NFA_reverse(automaton)
+    for state_from, table_symbols in pairs(automaton.transitions) do
+    	local state_from_s = self.nonterm_prefix .. tostring(state_from)
+		if state_from == 1 then self.rules[state_from_s] = {{}} end
+    	self.nonterminals:add(state_from_s)
+        for symbol, table_labels in pairs(table_symbols) do
+            local states_to = table_labels[""]
+
+            if not (symbol == "" or symbol == Automaton.eps) then self.terminals:add(symbol) end
+
+            for _, state_to in pairs(states_to) do
+            	local state_to_s = self.nonterm_prefix .. tostring(state_to)
+				if not self.rules[state_to_s] then self.rules[state_to_s] = {} end
+            	self.nonterminals:add(state_to_s)
+    			if symbol == "" or symbol == Automaton.eps then
+    				table.insert(self.rules[state_to_s], {state_from_s})
+				else
+    				table.insert(self.rules[state_to_s], {symbol, state_from_s})
+				end
+        	end
+        end
+    end
 end
 
 function Grammar:tostring()
