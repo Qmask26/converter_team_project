@@ -1,4 +1,5 @@
 local class = require("src/model/middleclass")
+local Set = require("src/model/set")
 require("src/utils/common")
 
 Automaton_module = {}
@@ -103,8 +104,6 @@ function Automaton:addTransition(from, to, symbol, label)
     end
 end
 
-
-
 function Automaton:tostring()
     local res = ""
     res = res .. "is DFA: " .. tostring(self.isDFA) .. "\n"
@@ -133,6 +132,16 @@ function Automaton:tostring()
         end
     end
     return res
+end
+
+function Automaton:getAlphabet()
+    local trans = self.transitions_raw
+    local alph = Set:new({})
+    for i = 1, #trans, 1 do
+        if trans[i].symbol == "_epsilon_" then alph:add("") end
+        alph:add(trans[i].symbol)
+    end
+    return alph
 end
 
 
