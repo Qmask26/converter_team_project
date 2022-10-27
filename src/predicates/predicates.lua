@@ -56,9 +56,7 @@ function grammar_from_transition(nfa, transit_prefix, state_prefix, equiv_classe
     local rules = {}
     local terminals = Set:new({})
     local nonterminals = Set:new({})
-    --print(nfa:tostring())
     local new_nfa = add_label_to_nfa(nfa, transit_prefix)
-    --print(new_nfa:tostring())
 
     for state_from, table_symbols in pairs(new_nfa.transitions) do
         for symbol, table_labels in pairs(table_symbols) do
@@ -83,11 +81,39 @@ function grammar_from_transition(nfa, transit_prefix, state_prefix, equiv_classe
         end
     end
     
-    --(table.concat(nonterminals:toarray(), ' '))
-    --print(table.concat(terminals:toarray(), ' '))
-
-    --print_rules(rules)
     return rules, terminals, nonterminals
+end
+
+function get_index_of_other_class(nonterm, class)
+    for i = 1, #class, 1 do
+        for j = 1, #class[i], 1 do
+            if class[i][j] == nonterm then return i end
+        end
+    end
+end
+
+function classes_intersection(classes1, classes2)
+    local new_classes = {}
+
+    for i = 1, #classes1, 1 do
+        if #classes1[i] == 2 then table.insert(new_classes, classes1[i])
+        else
+            local indexes = {}
+            for j = 1, #classes1[i], 1 do
+                local k = get_index_of_other_class(classes1[i][j], classes2)
+                if indexes[k] == nil then
+                    indexes[k] = {classes1[i][j]}
+                else
+                    table.insert(indexes[k], classes1[i][j])
+                end
+            end
+
+            for key, nonterm_class in pairs(indexes) do
+                table.insert(new_classes, nonterm_class)
+            end
+        end
+    end
+    return new_classes
 end
 
 function Equal(nfa1, nfa2)
@@ -98,38 +124,16 @@ function Equal(nfa1, nfa2)
 
     local is_bisim, equiv_classes_1, equiv_classes_2
     is_bisim, equiv_classes_1, equiv_classes_2, equiv_classes1 = is_bisimilar(grammar_1, grammar_2)
-    print_equiv_classes(equiv_classes1)
+    --print_equiv_classes(equiv_classes1)
     if not is_bisim then return false end
-    --print_equiv_classes(equiv_classes_1)
-    --print_equiv_classes(equiv_classes_2)
 
     local is_bisim_reverse, equiv_classes_reverse_1, equiv_classes_reverse_2
     is_bisim_reverse, equiv_classes_reverse_1, equiv_classes_reverse_2, equiv_classes2 = is_bisimilar(grammar_1_reverse, grammar_2_reverse)
-    print_equiv_classes(equiv_classes2)
-    --print_equiv_classes(equiv_classes_reverse_1)
-    --print_equiv_classes(equiv_classes_reverse_2)
+    --print_equiv_classes(equiv_classes2)
     if not is_bisim_reverse then return false end
 
-    local equiv_classes1 = {}
-    equiv_classes1[1] = {"S1"}
-    equiv_classes1[2] = {"S3"}
-    equiv_classes1[3] = {"S2"}
-    equiv_classes1[4] = {"S4"}
-    equiv_classes1[5] = {"S5"}
-
-    local equiv_classes2 = {}
-    equiv_classes2[1] = {"Q1"}
-    equiv_classes2[2] = {"Q3"}
-    equiv_classes2[3] = {"Q2"}
-    equiv_classes2[4] = {"Q4"}
-    equiv_classes2[5] = {"Q5"}
-
-    local equiv_classes = {}
-    equiv_classes[1] = {"S1", "Q1"}
-    equiv_classes[2] = {"S2", "Q2"}
-    equiv_classes[3] = {"S3", "Q3"}
-    equiv_classes[4] = {"S4", "Q4"}
-    equiv_classes[5] = {"S5", "Q5"}
+    local equiv_classes = classes_intersection(equiv_classes1, equiv_classes2)
+    --print_equiv_classes(equiv_classes)
 
     local rules1, terminals1, nonterminals1 = grammar_from_transition(nfa1, "A", "S", equiv_classes)
     local rules2, terminals2, nonterminals2 = grammar_from_transition(nfa2, "B", "Q", equiv_classes)
@@ -145,8 +149,7 @@ function Equal(nfa1, nfa2)
     transition_grammar_2.terminals = terminals2
     transition_grammar_2.nonterminals = nonterminals2
 
-    is_bisim, _ = is_bisimilar(transition_grammar_1, transition_grammar_2)
-    print('is equal:')
+    is_bisim = is_bisimilar(transition_grammar_1, transition_grammar_2)
     if not is_bisim then return false end
     
     return true
@@ -318,8 +321,8 @@ function division_into_equivalence_classes(input_rules, nonterminals)
 end
 
 function Bisimilar(nfa1, nfa2)
-    local grammar1 = Grammar.Grammar:new(nfa1, "S", false, false)
-    local grammar2 = Grammar.Grammar:new(nfa2, "Q", false, false)
+    local grammar1 = Grammar.Grammar:new(nfa1, "S", false, false, false)
+    local grammar2 = Grammar.Grammar:new(nfa2, "Q", false, false, false)
 
     local is_bisim, _ = is_bisimilar(grammar1, grammar2)
 
@@ -345,9 +348,7 @@ function is_bisimilar(grammar1, grammar2)
 
     -- импользуем первую лабу (вариант 2 который 1)
     rules1, nonterminals1, classes1 = division_into_equivalence_classes(input_rules1, nonterminals1)
-    print_rules(input_rules1)
     rules2, nonterminals2, classes2 = division_into_equivalence_classes(input_rules2, nonterminals2)
-    print_rules(input_rules2)
     
     -- проверяем на равенство количество нетерминалов и правил переписывания
     if #nonterminals1 ~= #nonterminals2 then return false end

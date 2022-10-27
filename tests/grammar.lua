@@ -14,8 +14,6 @@ local rtree2 = Regexs.Regex:new("(a|b*)")
 --print(grammar1:tostring())
 --print(grammar2:tostring())
 
---print(Bisimilar(nfa1, nfa2))
-
 local statesNumber = 5
 local finalStates = {4, 5}
 local transitions = {
@@ -38,11 +36,15 @@ local transitions = {
 }
 local nfa2 = Automaton.Automaton:new(5, finalStates, transitions, false, {1})
 
-print(Equal(nfa1, nfa2))
+print('Bisimilar: ' .. tostring(Bisimilar(nfa1, nfa2)))
+print('Equal: ' .. tostring(Equal(nfa1, nfa2)))
 
 --print('NFA')
 --print(nfa1:tostring())
---print(nfa2:tostring())
 --print('Grammar')
 --print(grammar1:tostring())
+
+--print('NFA')
+--print(nfa2:tostring())
+--print('Grammar')
 --print(grammar2:tostring())
