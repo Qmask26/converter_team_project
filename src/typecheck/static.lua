@@ -6,6 +6,131 @@ Typechecker = class("Typechecker")
 
 identifiersList = {}
 
+local idempotent = {
+    Minimize = true,
+    DeAnnote = true,
+    Annote = true,
+    MergeBisim = true,
+    DeLinearize = true,
+    Linearize = true,
+    RemEps = true,
+
+}
+
+local idempotentEven = {
+    Reverse = true,
+    Complement = true,
+}
+
+local function reverseArray(array)
+    local i = 1
+    local j = #array
+    while (i < j) do
+        local tmp  = array[i]
+        array[i] = array[j]
+        array[j] = tmp
+        i = i + 1
+        j = j - 1
+    end
+end
+
+local function removeExtraDeterminize(funcs)
+    local newFuncs = {}
+    newFuncs[1] = funcs[#funcs]
+    for i = #funcs - 1, 1, -1 do
+        if (funcs[i] == "Determinize") then
+            if (Metadata.functions[funcs[i + 1]].result ~= Metadata.dataTypes.DFA) then
+                newFuncs[#newFuncs + 1] = funcs[i]
+            else 
+                print("Determinization skipped at ")
+            end
+        else 
+            newFuncs[#newFuncs + 1] = funcs[i]
+        end
+    end
+    reverseArray(newFuncs)
+    return newFuncs
+end
+
+local function removeExtraIdempotent(funcs)
+    local newFuncs = {}
+    newFuncs[1] = funcs[#funcs]
+    for i = #funcs - 1, 1 , -1 do
+        if (idempotent[funcs[i]] == true) then
+            if (funcs[i] ~= funcs[i + 1]) then
+                newFuncs[#newFuncs + 1] = funcs[i]
+            end 
+        else
+            newFuncs[#newFuncs + 1] = funcs[i]
+        end
+    end
+    reverseArray(newFuncs)
+    return newFuncs
+end
+
+local function removeExtraDots(line)
+    local newLine = ""
+    for i = 1, #line, 1 do
+        if (line:byte(i) == 46) then
+            if (line:byte(i - 1) ~= 46 and i ~= 1) then
+                newLine = newLine .. string.char(line:byte(i))
+            end
+        else
+            newLine = newLine .. string.char(line:byte(i))
+        end
+    end
+    return newLine
+end
+
+local function removeExtraIdempotentEven(line)
+    for k, _ in pairs(idempotentEven) do
+        local newLine = line:gsub(k .. "." .. k, "")
+        if (#newLine < #line) then
+            print("Removed " .. k .. "." .. k)
+        end
+        line = removeExtraDots(line)
+    end
+    print(line)
+end
+
+local function removeExtraOps(line)
+    local funcChain = {}
+    local newLine = ""
+    removeExtraIdempotentEven(line)
+    local funcs = split(trim(split(trim(split(line, "=")[2]), " ")[1]), ".")
+    funcs = removeExtraDeterminize(funcs)
+    funcs = removeExtraIdempotent(funcs)
+    print(table.concat(funcs, "."))
+    return newLine
+end
+
+local function split(line, pattern)
+    local sub = {}
+    local tmp = ""
+    line = line .. pattern
+    for i = 1, #line, 1 do
+        if (line:byte(i) == pattern:byte(1)) then
+            if (#tmp > 0) then
+                sub[#sub + 1] = tmp
+            end
+            tmp = ""
+        else
+            tmp = tmp .. line:sub(i, i)
+        end
+    end
+    return sub
+end
+
+local function trim(line)
+    local res = line
+    while (res:byte(1) == 32) do
+        res = res:sub(2)
+    end
+    while (res:byte(#res) == 32) do
+        res = res:sub(1, #res - 1)
+    end
+    return res
+end
 
 function Typechecker:typecheck(filename)
     local errors = {}
@@ -13,6 +138,7 @@ function Typechecker:typecheck(filename)
     for line in io.lines(filename) do
         local error = nil
         if (line:find("=") ~= nil) then
+            line = removeExtraOps(line)
              error = Typechecker:checkDeclaration(line)
         elseif (line:lower():find("test") ~= nil) then
              error = Typechecker:checkTest(line)
@@ -89,7 +215,7 @@ function Typechecker:checkRightSide(right)
     end
 end
 
-function Typechecker:checkTest(test)
+function Typechecker:checkTest(line)
     local args = split(line:sub(6, #line - 1), ",")
     local arg1 = trim(args[1])
     local arg2 = trim(args[2])
@@ -139,36 +265,6 @@ function Typechecker:match(func, arg1, arg2)
     return match
 end
 
-
-
-
-function split(line, pattern)
-    local sub = {}
-    local tmp = ""
-    line = line .. pattern
-    for i = 1, #line, 1 do
-        if (line:byte(i) == pattern:byte(1)) then
-            if (#tmp > 0) then
-                sub[#sub + 1] = tmp
-            end
-            tmp = ""
-        else
-            tmp = tmp .. line:sub(i, i)
-        end
-    end
-    return sub
-end
-
-function trim(line)
-    local res = line
-    while (res:byte(1) == 32) do
-        res = res:sub(2)
-    end
-    while (res:byte(#res) == 32) do
-        res = res:sub(1, #res - 1)
-    end
-    return res
-end
 
 function Typechecker:whatType(c)
     if (#c:gsub("[%d]", "") == 0) then

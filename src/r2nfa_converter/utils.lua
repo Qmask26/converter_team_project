@@ -22,22 +22,22 @@ function transitions_increase_by_value(transitions, value)
 end
 
 function automatons_concat(m1, m2)
-    local transitionsM1 = copy_transitions(m1.transitions_raw)
-    local transitionsM2 = copy_transitions(m2.transitions_raw)
-    local lenM1 = m1.states
-    local lenM2 = m2.states
-    transitionsM2 = transitions_increase_by_value(transitionsM2, lenM1 - 1)
-    local M2_initial_neighbours = m2:allTransitions(lenM1)
-    local transitions = transitionsM1
-    for k, v in pairs(M2_initial_neighbours) do
-        table.insert(transitions, Automaton.Transition:new(lenM1, v[1], v[2], v[3]))
-    end
+    local m1tr = copy_transitions(m1.transitions_raw)
+    local m2tr = copy_transitions(m2.transitions_raw)
 
-    for i = 2, #transitionsM2, 1 do
-        table.insert(transitions, transitionsM2[i])
+    local m1stateNumber = m1.states
+    local m2stateNumber = m2.states
+    local statesNumber = m1stateNumber + m2stateNumber
+    
+    m2tr = transitions_increase_by_value(m2tr, m1stateNumber)
+    
+    local tr = copy_transitions(m1tr)
+    table.insert(tr, Automaton.Transition:new(m1stateNumber, m1stateNumber + 1, eps))
+    for _, v in pairs(m2tr) do
+        table.insert(tr, v)
     end
-    local statesNumber = lenM1 + lenM2 - 1
-    return Automaton.Automaton(statesNumber, {statesNumber}, transitions)
+    
+    return Automaton.Automaton(statesNumber, {statesNumber}, tr)
 end
 
 function automatons_alt(m1, m2)
