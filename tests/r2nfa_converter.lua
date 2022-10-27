@@ -38,8 +38,13 @@ local a = create_thompson_automaton(r2)
 print("Test Antimirov automaton")
 local r = Regex.Regex:new("(ab|b)*ba")
 local a = create_antimirov_automaton(r)
+print(a:tostring())
 
 local r1 = Regex.Regex:new("a*")
 local a = create_antimirov_automaton(r1)
+print(a:tostring())
 
--- print(a:tostring())
+
+local r1 = Regex.Regex:new("a*|b*")
+local a = create_antimirov_automaton(r1)
+print(a:tostring())

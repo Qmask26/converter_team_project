@@ -7,6 +7,7 @@ require("src/utils/common")
 
 function create_antimirov_automaton(regex)
     local alphabet = {}
+    local visited = Set:new({})
     local transitions = {}
     local states = {}
     local queue  = {}
@@ -15,28 +16,29 @@ function create_antimirov_automaton(regex)
     for k, v in pairs(regex.alphabet.items) do
         table.insert(alphabet, k)
     end
-    table.insert(queue, {regex, alphabet})
+
+    table.insert(queue, regex)
     statesNumber = statesNumber + 1
     states[regex.root.value] = statesNumber
+
     while table.length(queue) ~= 0 do
         local current = table.remove(queue, 1)
-        if current[2] ~= nil and table.length(current[2]) ~= 0 then
-            for k, v in pairs(current[2]) do
-                local deriv = antimirov_derivative(v, current[1].root)
-                local alph = shallowcopy(current[2])
-                table.remove(alph, k)
-                for deriv_item in pairs(deriv.items) do
-                    table.insert(queue, {Regex.Regex:new(deriv_item), alph})
-                    if not is_transition_in_table({current[1].root.value, v, deriv_item}, transitions) then
-                        table.insert(transitions, {current[1].root.value, v, deriv_item})
-                    end
-                    if states[deriv_item] == nil then
-                        statesNumber = statesNumber + 1
-                        states[deriv_item] = statesNumber
-                    end
-                    if canParseEpsilon(Regex.Regex:new(deriv_item)) then
-                        final:add(deriv_item)
-                    end
+        visited:add(current.root.value)
+        if canParseEpsilon(current) then
+            final:add(current.root.value)
+        end
+        for _, v in pairs(alphabet) do
+            local deriv = antimirov_derivative(v, current.root)
+            for deriv_item in pairs(deriv.items) do
+                if not visited:has(deriv_item) then
+                    table.insert(queue, Regex.Regex:new(deriv_item))
+                end
+                if not is_transition_in_table({current.root.value, v, deriv_item}, transitions) then
+                    table.insert(transitions, {current.root.value, v, deriv_item})
+                end
+                if states[deriv_item] == nil then
+                    statesNumber = statesNumber + 1
+                    states[deriv_item] = statesNumber
                 end
             end
         end
