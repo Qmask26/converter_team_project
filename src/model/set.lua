@@ -39,6 +39,14 @@ function Set:union(other_set)
 	end
 end
 
+function Set:toarray()
+	arr = {}
+	for v in pairs(self.items) do
+		table.insert(arr, v)
+	end
+	return arr
+end
+
 function Set:str()
 	res = ""
 	for key in pairs(self.items) do
