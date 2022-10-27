@@ -7,13 +7,13 @@ Grammar_module = {}
 
 Grammar = class("Grammar")
 
-function Grammar:initialize(automaton, nonterm_prefix, isDFA, for_transit_grammar, reverse_grammar)
-	if for_transit_grammar then
+function Grammar:initialize(automaton, nonterm_prefix, isDFA, purpose)
+	if purpose == "transition" then
 		self.nonterm_prefix = nonterm_prefix
 		self.nonterminals = Set:new({})
 		self.terminals = Set:new({})
 		self.rules = {}
-	elseif reverse_grammar then
+	elseif purpose == "reverse" then
 		self.nonterm_prefix = nonterm_prefix
 		self.nonterminals = Set:new({})
 		self.terminals = Set:new({})

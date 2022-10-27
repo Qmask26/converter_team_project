@@ -5,11 +5,11 @@ require "src/r2nfa_converter/thompson"
 require "src/utils/common"
 require "src/predicates/predicates"
 
-local rtree1 = Regexs.Regex:new("(a|b*)")
---local nfa1 = create_thompson_automaton(rtree1)
+local rtree1 = Regexs.Regex:new("(a|b*)|c*")
+local nfa1 = create_thompson_automaton(rtree1)
 
 local rtree2 = Regexs.Regex:new("(a|b*)")
---local nfa2 = create_thompson_automaton(rtree2)
+local nfa2 = create_thompson_automaton(rtree2)
 
 --print(grammar1:tostring())
 --print(grammar2:tostring())
@@ -23,7 +23,7 @@ local transitions = {
     {from = 2, symbol = 'c', to = 5, label = ""},
     {from = 3, symbol = 'a', to = 5, label = ""}
 }
-local nfa1 = Automaton.Automaton:new(5, finalStates, transitions, false, {1})
+--local nfa1 = Automaton.Automaton:new(5, finalStates, transitions, false, {1})
 
 local statesNumber = 5
 local finalStates = {4, 5}
@@ -34,7 +34,7 @@ local transitions = {
     {from = 2, symbol = 'c', to = 4, label = ""},
     {from = 3, symbol = 'a', to = 5, label = ""}
 }
-local nfa2 = Automaton.Automaton:new(5, finalStates, transitions, false, {1})
+--local nfa2 = Automaton.Automaton:new(5, finalStates, transitions, false, {1})
 
 print('Bisimilar: ' .. tostring(Bisimilar(nfa1, nfa2)))
 print('Equal: ' .. tostring(Equal(nfa1, nfa2)))

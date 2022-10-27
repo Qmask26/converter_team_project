@@ -17,17 +17,17 @@ function EquivNFA(nfa1, nfa2)
 end
 
 function EquivRegex(regex1, regex2)
-    local nfa1 = Antimirov(regex1)
-    local nfa2 = Antimirov(regex2)
+    local nfa1 = create_thompson_automaton(regex1)
+    local nfa2 = create_thompson_automaton(regex2)
 
     return EquivNFA(nfa1, nfa2)
 end
 
-function SubsetNFA(nfa)
+function SubsetNFA(nfa1, nfa2)
 
 end
 
-function add_label_to_nfa(nfa, label_prefix)
+function Annote(nfa, label_prefix)
     local transitions = {}
     local index = 1
 
@@ -40,28 +40,20 @@ function add_label_to_nfa(nfa, label_prefix)
         end
     end
 
-    local new_nfa = Automaton:new(nfa.states, nfa.final_states_raw, transitions, nfa.isDFA, nfa.start_states_raw)
+    local new_nfa = Automaton:new(nfa.states, nfa.final_states_raw, transitions, true, nfa.start_states_raw)
     return new_nfa
-end
-
-function key_by_val_in_arr(val, table_)
-    for key, arr in pairs(table_) do
-        for i = 0, #arr, 1 do
-            if arr[i] == val then return key end
-        end
-    end
 end
 
 function grammar_from_transition(nfa, transit_prefix, state_prefix, equiv_classes)
     local rules = {}
     local terminals = Set:new({})
     local nonterminals = Set:new({})
-    local new_nfa = add_label_to_nfa(nfa, transit_prefix)
+    local new_nfa = Annote(nfa, transit_prefix)
 
     for state_from, table_symbols in pairs(new_nfa.transitions) do
         for symbol, table_labels in pairs(table_symbols) do
             for label, state_to in pairs(table_labels) do
-                local eq_class_num = key_by_val_in_arr(state_prefix..tostring(state_to[1]), equiv_classes)
+                local eq_class_num = key_by_val_in_arr(state_prefix..tostring(state_to), equiv_classes)
                 local state_from_s = string.char(state_from + 96)
                 local state_to_s = string.char(eq_class_num + 96)
                 if not terminals:has(state_to_s) then terminals:add(state_to_s) end
@@ -69,7 +61,7 @@ function grammar_from_transition(nfa, transit_prefix, state_prefix, equiv_classe
                     nonterminals:add(label)
                     rules[label] = {}
                 end
-                transitions_of_state_to = new_nfa:allTransitions(state_to[1])
+                transitions_of_state_to = new_nfa:allTransitions(state_to)
                 if transitions_of_state_to[1] == nil then
                     table.insert(rules[label], {state_to_s})
                 else
@@ -117,10 +109,10 @@ function classes_intersection(classes1, classes2)
 end
 
 function Equal(nfa1, nfa2)
-    local grammar_1 = Grammar.Grammar:new(nfa1, "S", false, false, false)
-    local grammar_2 = Grammar.Grammar:new(nfa2, "Q", false, false, false)
-    local grammar_1_reverse = Grammar.Grammar:new(nfa1, "S", false, false, true)
-    local grammar_2_reverse = Grammar.Grammar:new(nfa2, "Q", false, false, true)
+    local grammar_1 = Grammar.Grammar:new(nfa1, "S", false, "state")
+    local grammar_2 = Grammar.Grammar:new(nfa2, "Q", false, "state")
+    local grammar_1_reverse = Grammar.Grammar:new(nfa1, "S", false, "reverse")
+    local grammar_2_reverse = Grammar.Grammar:new(nfa2, "Q", false, "reverse")
 
     local is_bisim, equiv_classes_1, equiv_classes_2
     is_bisim, equiv_classes_1, equiv_classes_2, equiv_classes1 = is_bisimilar(grammar_1, grammar_2)
@@ -138,8 +130,8 @@ function Equal(nfa1, nfa2)
     local rules1, terminals1, nonterminals1 = grammar_from_transition(nfa1, "A", "S", equiv_classes)
     local rules2, terminals2, nonterminals2 = grammar_from_transition(nfa2, "B", "Q", equiv_classes)
 
-    local transition_grammar_1 = Grammar.Grammar:new(nil, "A", false, true, false)
-    local transition_grammar_2 = Grammar.Grammar:new(nil, "B", false, true, false)
+    local transition_grammar_1 = Grammar.Grammar:new(nil, "A", false, "transition")
+    local transition_grammar_2 = Grammar.Grammar:new(nil, "B", false, "transition")
 
     transition_grammar_1.rules = rules1
     transition_grammar_1.terminals = terminals1
@@ -265,7 +257,6 @@ function split_classes(rules, classes, nonterminals)
         end
         table.sort(w1)
         w = table.concat(w1, '')
-        --print(w)
         
         if key_in_table(w, new_rules) then
             table.insert(nonterminal_classes[w], nonterm)
@@ -321,8 +312,8 @@ function division_into_equivalence_classes(input_rules, nonterminals)
 end
 
 function Bisimilar(nfa1, nfa2)
-    local grammar1 = Grammar.Grammar:new(nfa1, "S", false, false, false)
-    local grammar2 = Grammar.Grammar:new(nfa2, "Q", false, false, false)
+    local grammar1 = Grammar.Grammar:new(nfa1, "S", false, "state")
+    local grammar2 = Grammar.Grammar:new(nfa2, "Q", false, "state")
 
     local is_bisim, _ = is_bisimilar(grammar1, grammar2)
 
