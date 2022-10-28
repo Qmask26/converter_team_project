@@ -3,6 +3,7 @@ local Automaton = require("src/model/automaton")
 local eps = Automaton.eps
 require("src/r2nfa_converter/thompson")
 require("src/r2nfa_converter/antimirov")
+require("src/r2nfa_converter/glushkov")
 require("src/r2nfa_converter/utils")
 
 -- src/r2nfa_converter/utils
@@ -31,20 +32,26 @@ print("Test Thompson automaton Th(R)")
 local r = Regex.Regex:new("(((a|(c|d)*)|bc)*)")
 local r1 = Regex.Regex:new("(a|b*)")
 local r2 = Regex.Regex:new("(a|ba)*")
-local a = create_thompson_automaton(r2)
+local a = create_thompson_automaton(r1)
 -- print(a:tostring())
 
 
 print("Test Antimirov automaton")
 local r = Regex.Regex:new("(ab|b)*ba")
 local a = create_antimirov_automaton(r)
-print(a:tostring())
+-- print(a:tostring())
 
 local r1 = Regex.Regex:new("a*")
 local a = create_antimirov_automaton(r1)
-print(a:tostring())
+-- print(a:tostring())
 
 
 local r1 = Regex.Regex:new("a*|b*")
 local a = create_antimirov_automaton(r1)
-print(a:tostring())
+-- print(a:tostring())
+
+
+print("Test Glushkov automaton")
+local r1 = Regex.Regex:new("(a(ab)*)*|(ba)*")
+local a = create_glushkov_automaton(r1)
+-- print(a:tostring())
