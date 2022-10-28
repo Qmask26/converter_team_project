@@ -1,5 +1,6 @@
 local class = require("src/model/middleclass")
 local Automaton = require("src/model/automaton")
+require("src/automaton_functions/is_dfa")
 
 -- structures
 
@@ -12,6 +13,20 @@ function stack.pop()
 end
 
 -- utilities
+function deepcopy(orig)
+    local orig_type = type(orig)
+    local copy
+    if orig_type == 'table' then
+        copy = {}
+        for orig_key, orig_value in next, orig, nil do
+            copy[deepcopy(orig_key)] = deepcopy(orig_value)
+        end
+        setmetatable(copy, deepcopy(getmetatable(orig)))
+    else -- number, string, boolean, etc
+        copy = orig
+    end
+    return copy
+end
 
 local function contains(q, C)
     local check = false
@@ -90,6 +105,7 @@ local function dfs(nfa, q, C)
     end
     if check == false then 
         table.insert(C, q)
+        
         if nfa.transitions[q]["_epsilon_"] ~= nil then
             local trarr = nfa.transitions[q]["_epsilon_"][""]
             for i = 1, #trarr, 1 do
@@ -106,15 +122,38 @@ function closure(z, nfa)
     end
     return C
 end
+local function addStart(nfa)
+    local trs = {}
+    local start = {}
+    local final = {}
+    local states = nfa.states + 1
+    local isDFA = nfa.isDfa
 
-function Det(nfa)
+    for i = 1, #nfa.transitions_raw, 1 do
+        table.insert(trs, {from =nfa.transitions_raw[i].from + 1, symbol = nfa.transitions_raw[i].symbol, to = nfa.transitions_raw[i].to + 1, label = nfa.transitions_raw[i].label})
+    end
+    for i = 1, #nfa.start_states_raw, 1 do
+        start[i] = nfa.start_states_raw[i] + 1
+        table.insert(trs, {from = 1, symbol = "_epsilon_", to = start[i], label = nfa.transitions_raw[i].label})
+    end
+    table.insert(start, 1)
+    for i = 1, #nfa.final_states_raw, 1 do
+        final[i] = nfa.final_states_raw[i] + 1
+    end
+    
+    return Automaton.Automaton:new(states, final, trs, isDFA, start)
+end
+
+function Det(nfaIn)
+    if is_dfa(nfaIn.transitions_raw) then return nfaIn end
+    local nfa = addStart(nfaIn)
+    
+    local start = 1
     local tr = {}
     Q = {}
     F = {}
-    S = {}
+    S = {1}
     X = getAlphabet(nfa)
-
-    local start = nfa.start_states_raw[1]
 
     local q0 = closure({start}, nfa)
     table.insert(Q, q0)
@@ -127,18 +166,6 @@ function Det(nfa)
                 break
             end
         end
-        local isStart = false
-        for i = 1, #z, 1 do 
-            for j = 1, #nfa.start_states_raw, 1 do
-                if nfa.start_states_raw[j] == z[i] then
-                    table.insert(S, z)
-                    isStart = true
-                    break
-                end
-            end
-            if isStart then break end
-        end
-
         for i = 1, #X, 1 do
             local trarr = {}
             for j = 1, #z, 1 do
