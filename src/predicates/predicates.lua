@@ -101,7 +101,7 @@ function Bisimilar(nfa1, nfa2)
 end
 
 function MergeBisim(nfa)
-    local grammar = Grammar.Grammar:new(nfa1, "S", false, "state")
+    local grammar = Grammar.Grammar:new(nfa, "S", false, "state")
     local new_nfa = merge_bisim(grammar)
     return new_nfa
 end

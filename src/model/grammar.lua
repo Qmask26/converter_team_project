@@ -8,32 +8,33 @@ Grammar_module = {}
 Grammar = class("Grammar")
 
 function Grammar:initialize(automaton, nonterm_prefix, isDFA, purpose)
-	if purpose == "transition" then
-		self.nonterm_prefix = nonterm_prefix
-		self.nonterminals = Set:new({})
-		self.terminals = Set:new({})
-		self.rules = {}
-	elseif purpose == "reverse" then
-		self.nonterm_prefix = nonterm_prefix
-		self.nonterminals = Set:new({})
-		self.terminals = Set:new({})
-		self.rules = {}
-		if isDFA then
-			print('TODO')
-			self:from_DFA(automaton)
-		else
-			self:from_NFA_reverse(automaton)
+	self.nonterm_prefix = nonterm_prefix
+	self.nonterminals = Set:new({})
+	self.terminals = Set:new({})
+	self.rules = {}
+	self.start_states_raw = {}
+	self.final_states_raw = {}
+	if automaton ~= nil then
+		for _, state in pairs(automaton.start_states_raw) do
+			table.insert(self.start_states_raw, nonterm_prefix .. tostring(state))
 		end
-	else
-		self.nonterm_prefix = nonterm_prefix
-		self.nonterminals = Set:new({})
-		self.terminals = Set:new({})
-		self.rules = {}
+		for _, state in pairs(automaton.final_states_raw) do
+			table.insert(self.final_states_raw, nonterm_prefix .. tostring(state))
+		end
+	end
+	if purpose == "state" then
 		if isDFA then
 			print('TODO')
 			self:from_DFA(automaton)
 		else
 			self:from_NFA(automaton)
+		end
+	elseif purpose == "reverse" then
+		if isDFA then
+			print('TODO')
+			self:from_DFA(automaton)
+		else
+			self:from_NFA_reverse(automaton)
 		end
 	end
 end

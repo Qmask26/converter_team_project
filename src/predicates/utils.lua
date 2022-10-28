@@ -1,4 +1,9 @@
 local Set = require("src/model/set")
+local Automaton_module = require("src/model/automaton")
+
+local Automaton = Automaton_module.Automaton
+local Transition = Automaton_module.Transition
+local eps = Automaton_module.eps
 
 require("src/utils/common")
 require("src/r2nfa_converter/thompson")
@@ -229,17 +234,19 @@ function division_into_equivalence_classes(input_rules, nonterminals)
 
     rules, nonterminals, equiv_classes = make_new_grammar(rules, empty_nonterminals, nonterminals, equiv_classes, classes)
 
-    return rules, nonterminals, equiv_classes
+    return rules, nonterminals, equiv_classes, classes
 end
 
 function is_bisimilar(grammar1, grammar2)
     local input_rules1 = grammar1.rules
     local terminals1 = grammar1.terminals:toarray()
     local nonterminals1 = grammar1.nonterminals:toarray()
+    local start_states_1 = grammar1.start_states_raw
     
     local input_rules2 = grammar2.rules
     local terminals2 = grammar2.terminals:toarray()
     local nonterminals2 = grammar2.nonterminals:toarray()
+    local start_states_2 = grammar2.start_states_raw
 
     -- проверка на равенство количества терминналов
     if #terminals1 ~= #terminals2 then return false end
@@ -251,8 +258,6 @@ function is_bisimilar(grammar1, grammar2)
 
     -- импользуем первую лабу (вариант 2 который 1)
     rules1, nonterminals1, classes1 = division_into_equivalence_classes(input_rules1, nonterminals1)
-    print_rules(rules1)
-    print_equiv_classes(classes1)
     rules2, nonterminals2, classes2 = division_into_equivalence_classes(input_rules2, nonterminals2)
     
     -- проверяем на равенство количество нетерминалов и правил переписывания
@@ -262,10 +267,19 @@ function is_bisimilar(grammar1, grammar2)
     -- объединяем грамматики и снова первую лабу
     local rules, nonterminals, classes
     rules, nonterminals = grammar_union(rules1, rules2, nonterminals1, nonterminals2)
-    rules, nonterminals, classes = division_into_equivalence_classes(rules, nonterminals)
+    rules, nonterminals, classes, nonterm_class_num = division_into_equivalence_classes(rules, nonterminals)
+    
+    for i = 1, #start_states_1, 1 do
+        local key = false
+        for j = 1, #start_states_2, 1 do
+            if nonterm_class_num[start_states_1[i]] == nonterm_class_num[start_states_2[j]] then key = true end
+        end
+        if not key then return false end
+    end
     
     -- проверяем на равенство количество классов в одной из грамматик с объединённой
     if #classes ~= #classes1 then return false, classes1, classes2 end
+    
 
     local union_classes = classes_union(classes1, classes2, classes)
     
@@ -305,16 +319,85 @@ function array_concat(arr1, arr2)
     return arr1
 end
 
-function make_NFA_from_grammar(rules, nonterminals, classes)
-    
+function make_NFA_from_grammar(rules, nonterminals, classes, nonterm_num_classes, grammar)
+    local class_numbers = Set:new({})
+    local state_num = {}
+    local nonterm_prefix = nonterminals[1]:sub(1,1)
+    local transitions = {}
+    local new_nonterm_num_classes = {}
+
+    local num = 1
+    local diff = 0
+    for _ in pairs(nonterm_num_classes) do
+        for i = 1, #classes, 1 do
+            for j = 1, #classes[i], 1 do
+                state = nonterm_prefix .. tostring(num)
+                if classes[i][j] == state then
+                    if not class_numbers:has(i) then
+                        class_numbers:add(i)
+                        state_num[i] = num - diff
+                    else
+                        diff = diff + 1
+                    end
+                    new_nonterm_num_classes[state] = state_num[i]
+                end
+            end
+        end
+        num = num + 1
+    end
+
+    local class_numbers = Set:new({})
+    local state_from, state_to, symbol
+    local label =  ""
+    for nonterm, class_num in pairs(new_nonterm_num_classes) do
+        for rule_nonterm, nonterm_rules in pairs(rules) do
+            state_from = new_nonterm_num_classes[rule_nonterm]
+            if not class_numbers:has(state_from) then
+                class_numbers:add(state_from)
+                for _, rule in pairs(nonterm_rules) do
+                    if #rule == 1 then
+                        symbol = eps
+                        state_to = new_nonterm_num_classes[rule[1]]
+                        table.insert(transitions, Transition:new(state_from, state_to, symbol, label))
+                    elseif #rule == 2 then
+                        symbol = rule[1]
+                        state_to = new_nonterm_num_classes[rule[2]]
+                        table.insert(transitions, Transition:new(state_from, state_to, symbol, label))
+                    end
+                end
+            end
+        end
+    end
+
+    local new_start_states = Set:new({})
+    for i = 1, #grammar.start_states_raw, 1 do
+        for state, num in pairs(new_nonterm_num_classes) do
+            if grammar.start_states_raw[i] == state and not new_start_states:has(num) then
+                new_start_states:add(num)
+            end
+        end
+    end
+
+    local new_final_states = Set:new({})
+    for i = 1, #grammar.final_states_raw, 1 do
+        for state, num in pairs(new_nonterm_num_classes) do
+            if grammar.final_states_raw[i] == state and not new_final_states:has(num) then
+                new_final_states:add(num)
+            end
+        end
+    end
+
+    local nfa = Automaton:new(num - diff, new_final_states:toarray(), transitions, false, new_start_states:toarray())
+    return nfa
 end
 
 function merge_bisim(grammar)
-    local input_rules = grammar1.rules
-    local terminals = grammar1.terminals:toarray()
-    local nonterminals = grammar1.nonterminals:toarray()
+    local input_rules = grammar.rules
+    local terminals = grammar.terminals:toarray()
+    local nonterminals = grammar.nonterminals:toarray()
 
-    rules, nonterminals, classes = division_into_equivalence_classes(input_rules, nonterminals)
+    rules, nonterminals, classes, nonterm_num_classes = division_into_equivalence_classes(input_rules, nonterminals)
 
-    local nfa = make_NFA_from_grammar(rules, nonterminals, classes)
+    local nfa = make_NFA_from_grammar(rules, nonterminals, classes, nonterm_num_classes, grammar)
+    return nfa
 end
