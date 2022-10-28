@@ -42,3 +42,5 @@ function create_glushkov_automaton(regex)
     end
     return Automaton.Automaton:new(statesNumber, f, tr)
 end
+
+return create_glushkov_automaton
