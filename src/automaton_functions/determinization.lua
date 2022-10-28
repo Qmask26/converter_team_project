@@ -115,7 +115,7 @@ local function dfs(nfa, q, C)
     end
 end
 
-local function closure(z, nfa)
+function closure(z, nfa)
     local C = {}
     for i = 1, #z, 1 do
             dfs(nfa, z[i], C)
