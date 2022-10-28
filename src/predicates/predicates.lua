@@ -14,11 +14,11 @@ local Transition = Automaton_module.Transition
 function EquivNFA(nfa1, nfa2)
     local e1 = Det(nfa1)
     local e2 = Det(nfa2)
-    --print(e1:tostring())
+    print(e1:tostring())
     --print(e2:tostring())
     e1 = minimization(e1)
     e2 = minimization(e2)
-    --print(e1:tostring())
+    print(e1:tostring())
     --print(e2:tostring())
 
     return Equal(e1, e2)
@@ -98,4 +98,10 @@ function Bisimilar(nfa1, nfa2)
     local is_bisim, _ = is_bisimilar(grammar1, grammar2)
 
     return is_bisim
+end
+
+function MergeBisim(nfa)
+    local grammar = Grammar.Grammar:new(nfa1, "S", false, "state")
+    local new_nfa = merge_bisim(grammar)
+    return new_nfa
 end

@@ -251,6 +251,8 @@ function is_bisimilar(grammar1, grammar2)
 
     -- импользуем первую лабу (вариант 2 который 1)
     rules1, nonterminals1, classes1 = division_into_equivalence_classes(input_rules1, nonterminals1)
+    print_rules(rules1)
+    print_equiv_classes(classes1)
     rules2, nonterminals2, classes2 = division_into_equivalence_classes(input_rules2, nonterminals2)
     
     -- проверяем на равенство количество нетерминалов и правил переписывания
@@ -301,4 +303,18 @@ function array_concat(arr1, arr2)
         arr1[#arr1 + 1] = arr2[i]
     end
     return arr1
+end
+
+function make_NFA_from_grammar(rules, nonterminals, classes)
+    
+end
+
+function merge_bisim(grammar)
+    local input_rules = grammar1.rules
+    local terminals = grammar1.terminals:toarray()
+    local nonterminals = grammar1.nonterminals:toarray()
+
+    rules, nonterminals, classes = division_into_equivalence_classes(input_rules, nonterminals)
+
+    local nfa = make_NFA_from_grammar(rules, nonterminals, classes)
 end
