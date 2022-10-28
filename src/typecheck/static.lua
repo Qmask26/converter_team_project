@@ -4,7 +4,7 @@ local EM = require("src/model/expression")
 
 Typechecker = class("Typechecker")
 
-identifiersList = {}
+local identifiersList = {}
 
 local idempotent = {
     Minimize = true,
@@ -42,7 +42,7 @@ local function removeExtraDeterminize(funcs)
             if (Metadata.functions[funcs[i + 1]].result ~= Metadata.dataTypes.DFA) then
                 newFuncs[#newFuncs + 1] = funcs[i]
             else 
-                print("Determinization skipped at ")
+                print("Determinize removed")
             end
         else 
             newFuncs[#newFuncs + 1] = funcs[i]
@@ -59,7 +59,9 @@ local function removeExtraIdempotent(funcs)
         if (idempotent[funcs[i]] == true) then
             if (funcs[i] ~= funcs[i + 1]) then
                 newFuncs[#newFuncs + 1] = funcs[i]
-            end 
+            else
+                print("Removed " .. funcs[i])
+            end
         else
             newFuncs[#newFuncs + 1] = funcs[i]
         end
@@ -87,21 +89,11 @@ local function removeExtraIdempotentEven(line)
         local newLine = line:gsub(k .. "." .. k, "")
         if (#newLine < #line) then
             print("Removed " .. k .. "." .. k)
+            line = newLine
         end
         line = removeExtraDots(line)
     end
-    print(line)
-end
-
-local function removeExtraOps(line)
-    local funcChain = {}
-    local newLine = ""
-    removeExtraIdempotentEven(line)
-    local funcs = split(trim(split(trim(split(line, "=")[2]), " ")[1]), ".")
-    funcs = removeExtraDeterminize(funcs)
-    funcs = removeExtraIdempotent(funcs)
-    print(table.concat(funcs, "."))
-    return newLine
+    return line
 end
 
 local function split(line, pattern)
@@ -132,11 +124,23 @@ local function trim(line)
     return res
 end
 
-function Typechecker:typecheck(filename)
-    local errors = {}
 
-    for line in io.lines(filename) do
-        local error = nil
+local function removeExtraOps(line)
+    local leftside = trim(split(line, "=")[1])
+    local rightside = trim(split(line, "=")[2])
+    local funcs = trim(rightside:sub(1, rightside:find(" ")))
+    local args = trim(rightside:sub(rightside:find(" "), #rightside))
+    funcs = removeExtraIdempotentEven(funcs)
+    funcs = split(funcs, ".")
+    funcs = removeExtraDeterminize(funcs)
+    funcs = removeExtraIdempotent(funcs)
+    return leftside .. " = " .. table.concat(funcs, ".") .. " " .. args
+end
+
+
+function Typechecker:typecheck(line)
+    local lines = {}
+    local error = nil
         if (line:find("=") ~= nil) then
             line = removeExtraOps(line)
              error = Typechecker:checkDeclaration(line)
@@ -149,11 +153,12 @@ function Typechecker:typecheck(filename)
             print("Error at " .. line .. " : " .. error)
             return
         end
+        lines[#lines + 1] = line
+    if (error ~= nil) then
+        print(error)
+        return nil
     end
-    for k, v in pairs(errors) do
-        print(v)
-    end
-    return #errors
+    return line
 end
 
 function Typechecker:checkDeclaration(declaration)
@@ -172,15 +177,14 @@ function Typechecker:checkRightSide(right)
     elseif (#lines == 2) then
         local funcs = split(lines[1], ".")
         if (Metadata.functions[funcs[#funcs]].argNum ~= 1) then
-            print(funcs[#funcs], Metadata.functions[funcs[#funcs]].argNum)
             return "Too many arguments", nil
         end
         funcs[#funcs + 1] = lines[2]
         local currentType = Typechecker:whatType(funcs[#funcs])
         for i = #funcs - 1, 1, -1 do
-            if (Metadata.functions[funcs[i]].first == currentType or 
+            if (Metadata.functions[funcs[i]].first == currentType or (
                 Metadata.functions[funcs[i]].first == Metadata.dataTypes.NFA and 
-                currentType == Metadata.dataTypes.DFA) then
+                currentType == Metadata.dataTypes.DFA)) then
                 currentType = Metadata.functions[funcs[i]].result
             else 
                 return "Type mismatch", nil
@@ -275,5 +279,4 @@ function Typechecker:whatType(c)
         return Metadata.dataTypes.Regex
     end
 end
-
 return Typechecker
