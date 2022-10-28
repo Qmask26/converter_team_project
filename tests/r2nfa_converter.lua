@@ -32,13 +32,19 @@ local r = Regex.Regex:new("(((a|(c|d)*)|bc)*)")
 local r1 = Regex.Regex:new("(a|b*)")
 local r2 = Regex.Regex:new("(a|ba)*")
 local a = create_thompson_automaton(r2)
-print(a:tostring())
+-- print(a:tostring())
 
 
 print("Test Antimirov automaton")
 local r = Regex.Regex:new("(ab|b)*ba")
--- print(r.alphabet:str())
+local a = create_antimirov_automaton(r)
+print(a:tostring())
 
-a = create_antimirov_automaton(r)
+local r1 = Regex.Regex:new("a*")
+local a = create_antimirov_automaton(r1)
+print(a:tostring())
 
--- print(a:tostring())
+
+local r1 = Regex.Regex:new("a*|b*")
+local a = create_antimirov_automaton(r1)
+print(a:tostring())
