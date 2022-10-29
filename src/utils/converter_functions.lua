@@ -1,7 +1,7 @@
-Automaton_functions = require("src/automaton_functions/module")
-Derivatives = require("src/derivatives/module")
-r2nfa = require("src/r2nfa_converter/module")
-Predicates = require("src/predicates/predicates")
+local Automaton_functions = require("src/automaton_functions/module")
+local Derivatives = require("src/derivatives/module")
+local r2nfa = require("src/r2nfa_converter/module")
+local Predicates = require("src/predicates/predicates")
 --Все возможные функции преобразователя с типами их аргументов и возвращаемого значения
 --argNum - количество аргументовф
 --first - первый аргумент
@@ -18,6 +18,8 @@ local DATA_TYPES = {
     Int = 2,
     String = 9,
     Value = 10,
+    Bool = 11,
+    IO = 12
 }
 
 
@@ -88,16 +90,11 @@ local CONVETER_FUNCTIONS = {
         result = DATA_TYPES.DFA
     },
 
-    DeLinearizeNFA = {
+    DeLinearize = {
         argNum = 1,
-        first = DATA_TYPES.NFA,
-        result = DATA_TYPES.NFA,
-    },
-
-    DeLinearizeRegex = {
-        argNum = 1,
-        first = DATA_TYPES.Regex,
-        result = DATA_TYPES.Regex,
+        first = {DATA_TYPES.NFA, DATA_TYPES.Regex},
+        result = {DATA_TYPES.NFA, DATA_TYPES.Regex},
+        call = {},
     },
     
     Complement = {
@@ -106,16 +103,11 @@ local CONVETER_FUNCTIONS = {
         result = DATA_TYPES.DFA
     },
 
-    DeAnnoteNFA = {
+    DeAnnote = {
         argNum = 1,
-        first = DATA_TYPES.NFA,
-        result = DATA_TYPES.NFA
-    },
-
-    DeAnnoteRegex = {
-        argNum = 1,
-        first = DATA_TYPES.Regex,
-        result = DATA_TYPES.Regex
+        first = {DATA_TYPES.NFA, DATA_TYPES.Regex},
+        result = {DATA_TYPES.NFA, DATA_TYPES.Regex},
+        call = {},
     },
 
     MergeBisim = {
@@ -147,7 +139,7 @@ local CONVETER_FUNCTIONS = {
         argNum = 2,
         first = DATA_TYPES.Regex,
         second = DATA_TYPES.String,
-        result = "Bool"
+        result = DATA_TYPES.Bool
     },
 
     States = {
@@ -192,59 +184,43 @@ local CONVETER_FUNCTIONS = {
         argNum = 1,
         first = DATA_TYPES.NFA,
         second = DATA_TYPES.NFA,
-        result = "Bool",
+        result = DATA_TYPES.Bool,
     },
 
-    MinimalDFA = {
-        first = DATA_TYPES.DFA,
-        result = "Bool"
-    },
-
-    SubsetRegex = {
+    Minimal = {
         argNum = 1,
-        first = DATA_TYPES.Regex,
-        second = DATA_TYPES.Regex,
-        result = "Bool"
+        first = {DATA_TYPES.DFA, DATA_TYPES.NFA},
+        result = {DATA_TYPES.Bool, DATA_TYPES.Bool},
+        call = {}
     },
 
-    EquivNFA = {
+    Equiv = {
         argNum = 2,
-        first = DATA_TYPES.NFA,
-        second = DATA_TYPES.NFA,
-        result = "Bool"
+        first = {DATA_TYPES.NFA, DATA_TYPES.Regex},
+        second = {DATA_TYPES.NFA, DATA_TYPES.Regex},
+        result = {DATA_TYPES.Bool, DATA_TYPES.Bool},
+        call = {},
     },
 
-    EquivRegex = {
+    Subset = {
         argNum = 2,
-        first = DATA_TYPES.Regex,
-        second = DATA_TYPES.Regex,
-        result = "Bool"
-    },
-
-    MinimalNFA = {
-        argNum = 1,
-        first = DATA_TYPES.NFA,
-        result = "Bool"
-    },
-
-    SubsetNFA = {
-        argNum = 2,
-        first = DATA_TYPES.NFA,
-        second = DATA_TYPES.NFA,
-        result = "Bool"
+        first = {DATA_TYPES.Regex, DATA_TYPES.NFA},
+        second = {DATA_TYPES.Regex, DATA_TYPES.NFA},
+        result = {DATA_TYPES.Bool, DATA_TYPES.Bool},
+        call = {}
     },
 
     Equal = {
         argNum = 2,
         first = DATA_TYPES.NFA,
         second = DATA_TYPES.NFA,
-        result = "Bool"
+        result = DATA_TYPES.Bool
     },
 
     SemDet = {
         argNum = 1,
         first = DATA_TYPES.NFA,
-        result = "Bool"
+        result = DATA_TYPES.Bool
     },
 
     TestNFA = {
@@ -252,7 +228,7 @@ local CONVETER_FUNCTIONS = {
         first = DATA_TYPES.NFA,
         second = DATA_TYPES.Regex,
         third = DATA_TYPES.Int,
-        result = "IO"
+        result = DATA_TYPES.IO
     },
 
     TestRegex = {
@@ -260,7 +236,15 @@ local CONVETER_FUNCTIONS = {
         first = DATA_TYPES.Regex,
         second = DATA_TYPES.Regex,
         third = DATA_TYPES.Int,
-        result = "IO"
+        result = DATA_TYPES.IO
+    },
+
+    isOverloaded = {
+        Equiv = true,
+        DeLinearize = true,
+        DeAnnote = true,
+        Subset = true,
+        Minimal = true,
     }
 }
 
@@ -297,13 +281,8 @@ setmetatable(CONVETER_FUNCTIONS.RemEps, {
     _call = Automaton_functions.RemEps
 })
 
-setmetatable(CONVETER_FUNCTIONS.EquivNFA, {
-    _call = Predicates.EquivNFA
-})
-
-setmetatable(CONVETER_FUNCTIONS.EquivRegex, {
-    _call = Predicates.EquivRegex
-})
+CONVETER_FUNCTIONS.Equiv.call[1] = Predicates.EquivNFA
+CONVETER_FUNCTIONS.Equiv.call[2] = Predicates.EquivRegex
 
 setmetatable(CONVETER_FUNCTIONS.Annote, {
     _call = Predicates.Annote
