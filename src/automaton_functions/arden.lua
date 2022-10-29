@@ -144,3 +144,5 @@ function Arden(nfa)
     -- new_nfa = ripState(new_nfa, 1)
     -- print(new_nfa:tostring())
 end
+
+return Arden
