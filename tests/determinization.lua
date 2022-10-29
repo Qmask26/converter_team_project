@@ -1,7 +1,10 @@
 local Automaton = require("src/model/automaton")
+local Regexs = require("src/model/regex")
 require "src/automaton_functions/determinization"
+require("src/r2nfa_converter/thompson")
 
-local statesNumber = 7
+
+local statesNumber = 6
 local finalStates = {6}
 local transitions = {
     {from = 1, symbol = "_epsilon_", to = 2, label = ""},
@@ -33,4 +36,3 @@ print("Transitions:(from, symbol, to, label)")
 for i = 1, #dfa.transitions_raw, 1 do
     print(dfa.transitions_raw[i].from, dfa.transitions_raw[i].symbol, dfa.transitions_raw[i].to, dfa.transitions_raw[i].label)
 end
-

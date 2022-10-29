@@ -1,4 +1,5 @@
 local class = require("src/model/middleclass")
+local Set = require("src/model/set")
 require("src/utils/common")
 
 Automaton_module = {}
@@ -49,7 +50,13 @@ function Automaton:initialize(statesNumber, finalStates, transitions, isDFA, sta
             else 
                 self.transitions[t.from][t.symbol] = {[t.label] = {t.to}}
             end
-        else 
+        elseif self.transitions[t.from][t.symbol][t.label] == nil then
+            if (self.isDFA) then
+                self.transitions[t.from][t.symbol][t.label] = t.to
+            else
+                self.transitions[t.from][t.symbol][t.label] = {t.to}
+            end
+        else
             table.insert(self.transitions[t.from][t.symbol][t.label], t.to)
         end
     end
@@ -85,11 +92,17 @@ function Automaton:changeStateFinality(state)
 end
 
 function Automaton:addTransition(from, to, symbol, label)
-    if (table.length(self.transitions[from]) == 0) then
+    if not self.transitions[from] or (table.length(self.transitions[from]) == 0) then
         if (self.isDFA) then
             self.transitions[from] = {[symbol] = {[label] = to}}
         else 
             self.transitions[from] = {[symbol] = {[label] = {to}}}
+        end
+    elseif not self.transitions[from][symbol] or (table.length(self.transitions[from][symbol]) == 0) then
+        if (self.isDFA) then
+            self.transitions[from][symbol] = {[label] = to}
+        else 
+            self.transitions[from][symbol] = {[label] = {to}}
         end
     else 
         table.insert(self.transitions[from][symbol][label], to)
@@ -97,12 +110,11 @@ function Automaton:addTransition(from, to, symbol, label)
     end
 end
 
-
-
 function Automaton:tostring()
     local res = ""
     res = res .. "is DFA: " .. tostring(self.isDFA) .. "\n"
     res = res .. "Number of states: " .. tostring(self.states) .. "\n"
+    if self.trap_state then res = res .. "Trap state: " .. tostring(self.trap_state) .. "\n" end
     res = res .. "Final states: "
     for k, v in pairs(self.finality) do
         if v then
@@ -127,6 +139,37 @@ function Automaton:tostring()
         end
     end
     return res
+end
+
+function Automaton:getAlphabet()
+    local trans = self.transitions_raw
+    local alph = Set:new({})
+    for i = 1, #trans, 1 do
+        if trans[i].symbol == "_epsilon_" then alph:add("") end
+        alph:add(trans[i].symbol)
+    end
+    return alph
+end
+
+function Automaton:addTrap()
+    if self.isDFA then
+        self.trap_state = self.states + 1
+        self.states = self.states + 1
+        local trap_state = self.states
+        self.finality[trap_state] = false
+
+        local alph = self:getAlphabet()
+        for ind_from, table_symbols in pairs(self.transitions) do
+            for symbol in pairs(alph.items) do
+                if not table_symbols[symbol] then
+                    self:addTransition(ind_from, trap_state, symbol, "")
+                end
+            end
+        end
+        for symbol in pairs(alph.items) do
+            self:addTransition(trap_state, trap_state, symbol, "")
+        end
+    end
 end
 
 

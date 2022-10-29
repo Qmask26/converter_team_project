@@ -1,6 +1,7 @@
 Automaton_functions = require("src/automaton_functions/module")
 Derivatives = require("src/derivatives/module")
 r2nfa = require("src/r2nfa_converter/module")
+Predicates = require("src/predicates/predicates")
 --Все возможные функции преобразователя с типами их аргументов и возвращаемого значения
 --argNum - количество аргументовф
 --first - первый аргумент
@@ -271,6 +272,11 @@ setmetatable(CONVETER_FUNCTIONS.Antimirov, {
     _call = r2nfa.Antimirov
 })
 
+setmetatable(CONVETER_FUNCTIONS.Glushkov, {
+    _call = r2nfa.Glushkov
+})
+
+
 setmetatable(CONVETER_FUNCTIONS.Determinize, {
     _call = Automaton_functions.Determinize
 })
@@ -283,6 +289,33 @@ setmetatable(CONVETER_FUNCTIONS.Reverse, {
     _call = Automaton_functions.Reverse
 })
 
+setmetatable(CONVETER_FUNCTIONS.Arden, {
+    _call = Automaton_functions.Arden
+})
+
+setmetatable(CONVETER_FUNCTIONS.RemEps, {
+    _call = Automaton_functions.RemEps
+})
+
+setmetatable(CONVETER_FUNCTIONS.EquivNFA, {
+    _call = Predicates.EquivNFA
+})
+
+setmetatable(CONVETER_FUNCTIONS.EquivRegex, {
+    _call = Predicates.EquivRegex
+})
+
+setmetatable(CONVETER_FUNCTIONS.Annote, {
+    _call = Predicates.Annote
+})
+
+setmetatable(CONVETER_FUNCTIONS.Equal, {
+    _call = Predicates.Equal
+})
+
+setmetatable(CONVETER_FUNCTIONS.Bisimilar, {
+    _call = Predicates.Bisimilar
+})
 
 
 
