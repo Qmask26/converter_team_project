@@ -281,8 +281,8 @@ setmetatable(CONVETER_FUNCTIONS.RemEps, {
     _call = Automaton_functions.RemEps
 })
 
-CONVETER_FUNCTIONS.Equiv.call[1] = setmetatable({}, {_call = Predicates.EquivNFA})
-CONVETER_FUNCTIONS.Equiv.call[2] = setmetatable({}, {_call = Predicates.EquivRegex})
+CONVETER_FUNCTIONS.Equiv.call[1] = Predicates.EquivNFA
+CONVETER_FUNCTIONS.Equiv.call[2] = Predicates.EquivRegex
 
 setmetatable(CONVETER_FUNCTIONS.Annote, {
     _call = Predicates.Annote
