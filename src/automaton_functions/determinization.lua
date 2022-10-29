@@ -77,7 +77,7 @@ local function transition(nfa, from, symbol)
     return arr
 end
 
-local function getAlphabet(nfa) 
+function getAlphabet(nfa) 
     local trans = nfa.transitions_raw
     local alph = {}
     for i = 1, #trans, 1 do
@@ -122,7 +122,7 @@ function closure(z, nfa)
     end
     return C
 end
-local function addStart(nfa)
+function addStart(nfa)
     local trs = {}
     local start = {}
     local final = {}
@@ -133,8 +133,7 @@ local function addStart(nfa)
         table.insert(trs, {from =nfa.transitions_raw[i].from + 1, symbol = nfa.transitions_raw[i].symbol, to = nfa.transitions_raw[i].to + 1, label = nfa.transitions_raw[i].label})
     end
     for i = 1, #nfa.start_states_raw, 1 do
-        start[i] = nfa.start_states_raw[i] + 1
-        table.insert(trs, {from = 1, symbol = "_epsilon_", to = start[i], label = nfa.transitions_raw[i].label})
+        table.insert(trs, {from = 1, symbol = "_epsilon_", to = nfa.start_states_raw[i] + 1, label = nfa.transitions_raw[i].label})
     end
     table.insert(start, 1)
     for i = 1, #nfa.final_states_raw, 1 do
