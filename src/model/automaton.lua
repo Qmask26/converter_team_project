@@ -85,14 +85,13 @@ function Automaton:changeStateFinality(state)
 end
 
 function Automaton:addTransition(from, to, symbol, label)
-    if self.transitions[from] == nil then self.transitions[from] = {} end
-    if (table.length(self.transitions[from]) == 0) then
+    if not self.transitions[from] or (table.length(self.transitions[from]) == 0) then
         if (self.isDFA) then
             self.transitions[from] = {[symbol] = {[label] = to}}
         else 
             self.transitions[from] = {[symbol] = {[label] = {to}}}
         end
-    elseif self.transitions[from][symbol] == nil then
+    elseif not self.transitions[from][symbol] or (table.length(self.transitions[from][symbol]) == 0) then
         if (self.isDFA) then
             self.transitions[from][symbol] = {[label] = to}
         else 
