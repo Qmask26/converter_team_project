@@ -182,7 +182,7 @@ function whatTypeOfRegex(regex)
 end
 
 function trimBrackets(regex) 
-    if (regex:byte(1) == bytes["("] and cbsEndsAt(regex, 1) == #regex) then
+    while (regex:byte(1) == bytes["("] and cbsEndsAt(regex, 1) == #regex) do
         regex = regex:sub(2, #regex - 1)
     end
     return regex
