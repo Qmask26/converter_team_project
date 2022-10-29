@@ -69,3 +69,25 @@ function deepcopy(orig, copies)
     end
     return copy
 end
+
+function string_match(array, symbol)
+    for i = 1, #array do
+        if array[i] == symbol then return true end
+    end
+    return false
+end
+
+function key_in_table(key, table)
+    for s, _ in pairs(table) do
+        if key == s then return true end
+    end
+    return false
+end
+
+function key_by_val_in_arr(val, table_)
+    for key, arr in pairs(table_) do
+        for i = 0, #arr, 1 do
+            if arr[i] == val then return key end
+        end
+    end
+end

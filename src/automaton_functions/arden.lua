@@ -151,3 +151,5 @@ function Arden(nfa)
     local r = Regex.RegexNode:new(new_nfa.transitions_raw[1].symbol, true)
     return r
 end
+
+return Arden
