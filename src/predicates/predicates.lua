@@ -12,16 +12,10 @@ local Automaton = Automaton_module.Automaton
 local Transition = Automaton_module.Transition
 
 function EquivNFA(nfa1, nfa2)
-    local e1 = Det(nfa1)
-    local e2 = Det(nfa2)
-    print(e1:tostring())
-    --print(e2:tostring())
-    e1 = minimization(e1)
-    e2 = minimization(e2)
-    print(e1:tostring())
-    --print(e2:tostring())
+    local dfa1 = minimization(Det(nfa1))
+    local dfa2 = minimization(Det(nfa2))
 
-    return Equal(e1, e2)
+    return Equal(dfa1, dfa2)
 end
 
 function EquivRegex(regex1, regex2)
@@ -32,6 +26,10 @@ function EquivRegex(regex1, regex2)
 end
 
 function SubsetNFA(nfa1, nfa2)
+    
+end
+
+function SubsetRegex(regex1, regex2)
 
 end
 
@@ -53,10 +51,10 @@ function Annote(nfa, label_prefix)
 end
 
 function Equal(nfa1, nfa2)
-    local grammar_1 = Grammar.Grammar:new(nfa1, "S", false, "state")
-    local grammar_2 = Grammar.Grammar:new(nfa2, "Q", false, "state")
-    local grammar_1_reverse = Grammar.Grammar:new(nfa1, "S", false, "reverse")
-    local grammar_2_reverse = Grammar.Grammar:new(nfa2, "Q", false, "reverse")
+    local grammar_1 = Grammar.Grammar:new(nfa1, "S", nfa1.isDFA, "state")
+    local grammar_2 = Grammar.Grammar:new(nfa2, "Q", nfa2.isDFA, "state")
+    local grammar_1_reverse = Grammar.Grammar:new(nfa1, "S", nfa1.isDFA, "reverse")
+    local grammar_2_reverse = Grammar.Grammar:new(nfa2, "Q", nfa2.isDFA, "reverse")
 
     local is_bisim, equiv_classes_1, equiv_classes_2
     is_bisim, equiv_classes_1, equiv_classes_2, equiv_classes1 = is_bisimilar(grammar_1, grammar_2)
@@ -74,8 +72,8 @@ function Equal(nfa1, nfa2)
     local rules1, terminals1, nonterminals1 = grammar_from_transition(nfa1, "A", "S", equiv_classes)
     local rules2, terminals2, nonterminals2 = grammar_from_transition(nfa2, "B", "Q", equiv_classes)
 
-    local transition_grammar_1 = Grammar.Grammar:new(nil, "A", false, "transition")
-    local transition_grammar_2 = Grammar.Grammar:new(nil, "B", false, "transition")
+    local transition_grammar_1 = Grammar.Grammar:new(nfa1, "A", nfa1.isDFA, "transition")
+    local transition_grammar_2 = Grammar.Grammar:new(nfa2, "B", nfa2.isDFA, "transition")
 
     transition_grammar_1.rules = rules1
     transition_grammar_1.terminals = terminals1
@@ -92,8 +90,8 @@ function Equal(nfa1, nfa2)
 end
 
 function Bisimilar(nfa1, nfa2)
-    local grammar1 = Grammar.Grammar:new(nfa1, "S", false, "state")
-    local grammar2 = Grammar.Grammar:new(nfa2, "Q", false, "state")
+    local grammar1 = Grammar.Grammar:new(nfa1, "S", nfa1.isDFA, "state")
+    local grammar2 = Grammar.Grammar:new(nfa2, "Q", nfa2.isDFA, "state")
 
     local is_bisim, _ = is_bisimilar(grammar1, grammar2)
 
@@ -101,7 +99,7 @@ function Bisimilar(nfa1, nfa2)
 end
 
 function MergeBisim(nfa)
-    local grammar = Grammar.Grammar:new(nfa, "S", false, "state")
+    local grammar = Grammar.Grammar:new(nfa, "S", nfa.isDFA, "state")
     local new_nfa = merge_bisim(grammar)
     return new_nfa
 end

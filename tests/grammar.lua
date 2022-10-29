@@ -3,6 +3,7 @@ local Regexs = require("src/model/regex")
 local Automaton = require("src/model/automaton")
 require "src/r2nfa_converter/thompson"
 require "src/r2nfa_converter/glushkov"
+require "src/r2nfa_converter/antimirov"
 require "src/utils/common"
 require "src/predicates/predicates"
 
@@ -14,9 +15,6 @@ local nfa2 = create_thompson_automaton(rtree2)
 
 local rtree3 = Regexs.Regex:new("(a|b)*b")
 local nfa3 = create_glushkov_automaton(rtree3)
-
---print(grammar1:tostring())
---print(grammar2:tostring())
 
 local statesNumber = 5
 local finalStates = {4, 5}
@@ -46,8 +44,10 @@ print()
 print('Equal: ' .. tostring(Equal(nfa1, nfa2)))
 print()
 
---print(nfa3:tostring())
-print('MergeBisim: \n' .. MergeBisim(nfa1):tostring())
+print('MergeBisim: \n' .. MergeBisim(nfa3):tostring())
+print()
+
+print('EquivNFA: ' .. tostring(EquivNFA(nfa1, nfa2)))
 print()
 
 --print('Equal: ' .. tostring(Equal(nfa1, nfa2)))

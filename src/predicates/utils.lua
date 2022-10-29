@@ -9,11 +9,32 @@ require("src/utils/common")
 require("src/r2nfa_converter/thompson")
 require("src/automaton_functions/determinization")
 
+function annote_for_DFA(automaton, label_prefix)
+    local transitions = {}
+    local index = 1
+    for state_from, table_symbols in pairs(automaton.transitions) do
+        for symbol, table_labels in pairs(table_symbols) do
+            for label, state_to in pairs(table_labels) do
+                transitions[#transitions + 1] = Transition:new(state_from, state_to, symbol, label_prefix..tostring(index))
+                index = index + 1
+            end
+        end
+    end
+
+    local new_nfa = Automaton:new(automaton.states, automaton.final_states_raw, transitions, true, automaton.start_states_raw)
+    return new_nfa    
+end
+
 function grammar_from_transition(nfa, transit_prefix, state_prefix, equiv_classes)
     local rules = {}
     local terminals = Set:new({})
     local nonterminals = Set:new({})
-    local new_nfa = Annote(nfa, transit_prefix)
+    local new_nfa
+    if nfa.isDFA then
+        new_nfa = annote_for_DFA(nfa, transit_prefix)
+    else
+        new_nfa = Annote(nfa, transit_prefix)
+    end
 
     for state_from, table_symbols in pairs(new_nfa.transitions) do
         for symbol, table_labels in pairs(table_symbols) do
@@ -21,7 +42,7 @@ function grammar_from_transition(nfa, transit_prefix, state_prefix, equiv_classe
                 local eq_class_num = key_by_val_in_arr(state_prefix..tostring(state_to), equiv_classes)
                 local state_from_s = string.char(state_from + 96)
                 local state_to_s = string.char(eq_class_num + 96)
-                if not terminals:has(state_to_s) then terminals:add(state_to_s) end
+                terminals:add(state_to_s)
                 if not key_in_table(label, rules) then
                     nonterminals:add(label)
                     rules[label] = {}
@@ -268,7 +289,7 @@ function is_bisimilar(grammar1, grammar2)
     local rules, nonterminals, classes
     rules, nonterminals = grammar_union(rules1, rules2, nonterminals1, nonterminals2)
     rules, nonterminals, classes, nonterm_class_num = division_into_equivalence_classes(rules, nonterminals)
-    
+
     for i = 1, #start_states_1, 1 do
         local key = false
         for j = 1, #start_states_2, 1 do
@@ -387,7 +408,7 @@ function make_NFA_from_grammar(rules, nonterminals, classes, nonterm_num_classes
         end
     end
 
-    local nfa = Automaton:new(num - diff, new_final_states:toarray(), transitions, false, new_start_states:toarray())
+    local nfa = Automaton:new(num - diff - 1, new_final_states:toarray(), transitions, false, new_start_states:toarray())
     return nfa
 end
 
