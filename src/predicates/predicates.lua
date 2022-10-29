@@ -390,3 +390,11 @@ function array_concat(arr1, arr2)
     end
     return arr1
 end
+
+local Predicates = {
+    EquivNFA = EquivNFA,
+    EquivRegex = EquivRegex,
+    Annote = Annote,
+    Equal = Equal,
+    Bisimilar = Bisimilar,
+}
