@@ -73,3 +73,5 @@ function create_follow_automaton(regex)
     end
     return Automaton.Automaton:new(statesNumber_new, f, tr_f)
 end
+
+return create_follow_automaton
