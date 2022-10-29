@@ -284,10 +284,6 @@ setmetatable(CONVETER_FUNCTIONS.RemEps, {
 CONVETER_FUNCTIONS.Equiv.call[1] = Predicates.EquivNFA
 CONVETER_FUNCTIONS.Equiv.call[2] = Predicates.EquivRegex
 
-setmetatable(CONVETER_FUNCTIONS.Annote, {
-    _call = Predicates.Annote
-})
-
 setmetatable(CONVETER_FUNCTIONS.Equal, {
     _call = Predicates.Equal
 })
