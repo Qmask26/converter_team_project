@@ -26,11 +26,17 @@ function EquivRegex(regex1, regex2)
 end
 
 function SubsetNFA(nfa1, nfa2)
-    
+    local dfa1 = Det(nfa1)
+    local dfa2 = Det(nfa2)
+    local intersection = intersect_dfa(dfa1, dfa2)
+    return EquivNFA(dfa1, intersection)
 end
 
 function SubsetRegex(regex1, regex2)
+    local automaton1 = create_glushkov_automaton(regex1)
+    local automaton2 = create_glushkov_automaton(regex2)
 
+    SubsetNFA(automaton1, automaton2)
 end
 
 function Annote(nfa, label_prefix)
@@ -103,3 +109,13 @@ function MergeBisim(nfa)
     local new_nfa = merge_bisim(grammar)
     return new_nfa
 end
+
+local Predicates = {
+    EquivNFA = EquivNFA,
+    EquivRegex = EquivRegex,
+    Annote = Annote,
+    Equal = Equal,
+    Bisimilar = Bisimilar,
+}
+
+return Predicates

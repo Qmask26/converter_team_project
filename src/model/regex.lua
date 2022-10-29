@@ -76,6 +76,7 @@ end
 --Поле nchildren содержит количество дочерних вершин (максимум две). Им соответствуют поля firstChild и secondChild
 
 function RegexNode:initialize(regex, parse)
+    local regex = trimBrackets(regex)
     self.value = regex
     self.value_for_print = self.value
     if (self.value == "") then
