@@ -1,6 +1,7 @@
 local class = require("src/model/middleclass")
 local Automaton = require("src/model/automaton")
 local Regex = require("src/model/regex")
+require "src/automaton_functions/determinization"
 
 function deepcopy(orig)
     local orig_type = type(orig)
@@ -116,6 +117,7 @@ local function ripState(nfa, state)
                 end
             end 
             symbol = to_symbol .. selfLoopSymbol .. from_symbol
+            if symbol == "" then symbol = "_epsilon_" end
             local added = false
             -- if selfLoop then symbol = "(".. symbol .. ")"  end
             if symbol ~= "" then 
@@ -143,7 +145,12 @@ local function ripState(nfa, state)
     return Automaton.Automaton:new(nfa.states - 1, finalStates, transitions, false, startStates)
 end
 
-function Arden(nfa)
+function Arden(nfaIn)
+    local nfa
+    if #nfaIn.start_states_raw > 1 then nfa = addStart(nfaIn) 
+    else
+        nfa = nfaIn
+    end
     local new_nfa = modifyNFA(nfa)
     while new_nfa.states > 2 do
         new_nfa = ripState(new_nfa, 1)
