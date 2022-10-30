@@ -28,9 +28,12 @@ end
 
 function SubsetNFA(nfa1, nfa2)
     local dfa1 = Det(nfa1)
-    dfa1:addTrap()
     local dfa2 = Det(nfa2)
-    dfa2:addTrap()
+    local alphabet = dfa1:getAlphabet()
+    alphabet:union(dfa2:getAlphabet())
+    
+    dfa1:addTrap(alphabet)
+    dfa2:addTrap(alphabet)
     local intersection = intersect_dfa(dfa1, dfa2)
     return EquivNFA(dfa1, intersection)
 end

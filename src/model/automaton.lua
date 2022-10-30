@@ -155,22 +155,24 @@ function Automaton:getAlphabet()
     return alph
 end
 
-function Automaton:addTrap()
+function Automaton:addTrap(alphabet)
     if self.isDFA and not self.trap_state then
         self.trap_state = self.states + 1
         self.states = self.states + 1
         local trap_state = self.states
         self.finality[trap_state] = false
 
-        local alph = self:getAlphabet()
+        if not alphabet then
+            local alphabet = self:getAlphabet()
+        end
         for ind_from, table_symbols in pairs(self.transitions) do
-            for symbol in pairs(alph.items) do
+            for symbol in pairs(alphabet.items) do
                 if not table_symbols[symbol] then
                     self:addTransition(ind_from, trap_state, symbol, "")
                 end
             end
         end
-        for symbol in pairs(alph.items) do
+        for symbol in pairs(alphabet.items) do
             self:addTransition(trap_state, trap_state, symbol, "")
         end
     end
