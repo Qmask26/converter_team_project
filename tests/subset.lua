@@ -1,8 +1,11 @@
 local Regexs = require("src/model/regex")
 require "src/utils/common"
 require "src/predicates/predicates"
+require("src/r2nfa_converter/thompson")
+require "src/automaton_functions/determinization"
+require("src/automaton_functions/minimization")
 
 local r1 = Regexs.Regex:new("(a|ba)*")
-local r2 = Regexs.Regex:new("(ba)")
+local r2 = Regexs.Regex:new("(ba)*")
 
-print(SubsetRegex(r1, r2))
+print(SubsetRegex(r2, r1))

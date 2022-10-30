@@ -95,14 +95,18 @@ function Automaton:addTransition(from, to, symbol, label)
     if not self.transitions[from] or (table.length(self.transitions[from]) == 0) then
         if (self.isDFA) then
             self.transitions[from] = {[symbol] = {[label] = to}}
+            table.insert(self.transitions_raw, Transition:new(from, to, symbol, label))
         else 
             self.transitions[from] = {[symbol] = {[label] = {to}}}
+            table.insert(self.transitions_raw, Transition:new(from, to, symbol, label))
         end
     elseif not self.transitions[from][symbol] or (table.length(self.transitions[from][symbol]) == 0) then
         if (self.isDFA) then
             self.transitions[from][symbol] = {[label] = to}
+            table.insert(self.transitions_raw, Transition:new(from, to, symbol, label))
         else 
             self.transitions[from][symbol] = {[label] = {to}}
+            table.insert(self.transitions_raw, Transition:new(from, to, symbol, label))
         end
     else 
         table.insert(self.transitions[from][symbol][label], to)
