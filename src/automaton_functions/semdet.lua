@@ -1,0 +1,97 @@
+local Automaton = require("src/model/automaton")
+local Regex = require("src/model/regex")
+require "src/derivatives/brzozovski"
+require "src/derivatives/antimirov"
+require "src/automaton_functions/determinization"
+require "src/automaton_functions/arden"
+
+
+local function tableContains(tb, el) 
+    for i = 1, #tb, 1 do
+        if tb[i] == el then return true end
+    end
+    return false
+end
+local function uncertTransitions(nfa, from, alph)
+    local trs = {}
+    for i = 1, #alph, 1 do 
+        trs[alph[i]] = {}
+    end
+    for j = 1, #nfa.transitions_raw, 1 do
+        if nfa.transitions_raw[j].from == from then
+            table.insert(trs[nfa.transitions_raw[j].symbol], nfa.transitions_raw[j].to)
+        end
+    end 
+    return trs
+end
+
+local function uncertStates(nfa)
+    local uncert = {}
+    for i = 1, nfa.states, 1 do
+        local alph = {}
+        for j = 1, #nfa.transitions_raw, 1 do
+            if nfa.transitions_raw[j].from == i and tableContains(alph, nfa.transitions_raw[j].symbol) == false then
+                table.insert(alph, nfa.transitions_raw[j].symbol)
+            elseif nfa.transitions_raw[j].from == i then
+                table.insert(uncert, i)
+                break
+            end
+        end 
+
+    end
+    return uncert
+end
+local function trsFrom(nfa, from, selfLoop) 
+    local trs = {}
+    for i = 1, #nfa.transitions_raw, 1 do
+        if nfa.transitions_raw[i].from == from then 
+            if selfLoop then 
+                table.insert(trs, {from = from, symbol = nfa.transitions_raw[i].symbol, to = nfa.transitions_raw[i].to})
+            elseif selfLoop == false and nfa.transitions_raw[i].to ~= from then 
+                table.insert(trs, {from = from, symbol = nfa.transitions_raw[i].symbol, to = nfa.transitions_raw[i].to})
+            end
+        end
+    end
+    return trs
+end
+local function find_path(nfa, path, from, to, visited)
+    local trs = trsFrom(nfa, from, false)
+    for i = 1, #trs, 1 do
+        if tableContains(visited, trs[i].to) == false then
+            local path_check 
+            if trs[i].symbol == "_epsilon_" then path_check = path
+            else path_check = path .. trs[i].symbol end
+            if trs[i].to == to then return path_check end
+            table.insert(visited, trs[i].from)
+            local gained = find_path(nfa, path_check, trs[i].to, to, visited)
+            if gained ~= nil then return gained end
+        end
+    end
+end
+function SemDet(in_nfa) 
+    local nfa =  addStart(in_nfa)
+    local alph = getAlphabet(nfa)
+    local reg = Arden(nfa)
+    -- print(find_path(nfa, "", 1, trs[alph[j]][k], {}), "lol", trs[alph[j]][k], alph[j], uncert[i])
+    local uncert = uncertStates(nfa)
+    for i = 1, #uncert, 1 do 
+        print(uncert[i])
+    end
+    print(nfa:tostring())
+    for i = 1, #uncert, 1 do 
+        local trs = uncertTransitions(nfa, uncert[i], alph)
+        for j = 1, #alph, 1 do 
+            if #trs[alph[j]] > 1 then 
+                local words = {}
+                for k = 1, #trs[alph[j]], 1 do
+                    table.insert(words, find_path(nfa, "", 1, trs[alph[j]][k], {}))
+                end
+                for k = 1, #words, 1 do
+                    local deriv = antimirov_derivative(words[k], reg)
+                    print(deriv:str(), #deriv:toarray(), "cab", reg.value, words[k])
+                end
+                print()
+            end
+        end
+    end
+end
