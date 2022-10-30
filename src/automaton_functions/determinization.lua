@@ -144,7 +144,7 @@ function addStart(nfa)
 end
 
 function Det(nfaIn)
-    if is_dfa(nfaIn.transitions_raw) then return nfaIn end
+    if nfaIn.isDFA then return nfaIn end
     local nfa = addStart(nfaIn)
     
     local start = 1
