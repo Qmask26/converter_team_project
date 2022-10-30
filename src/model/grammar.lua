@@ -43,7 +43,7 @@ function Grammar:from_DFA(automaton)
     	self.nonterminals:add(state_from_s)
         for symbol, table_labels in pairs(table_symbols) do
 			for label, state_to in pairs(table_labels) do
-				self.terminals:add(symbol)
+				if not (symbol == "" or symbol == Automaton.eps) then self.terminals:add(symbol) end
 				if not self.rules[state_from_s] then self.rules[state_from_s] = {} end
 
 				local state_to_s = self.nonterm_prefix .. tostring(state_to)
@@ -100,7 +100,7 @@ function Grammar:from_DFA_reverse(automaton)
     	self.nonterminals:add(state_from_s)
         for symbol, table_labels in pairs(table_symbols) do
 			for label, state_to in pairs(table_labels) do
-				self.terminals:add(symbol)
+				if not (symbol == "" or symbol == Automaton.eps) then self.terminals:add(symbol) end
 				local state_to_s = self.nonterm_prefix .. tostring(state_to)
 				if not self.rules[state_to_s] then self.rules[state_to_s] = {} end
 				self.nonterminals:add(state_to_s)

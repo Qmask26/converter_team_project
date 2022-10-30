@@ -7,6 +7,7 @@ require("src/r2nfa_converter/thompson")
 require("src/automaton_functions/determinization")
 require("src/automaton_functions/minimization")
 require("src/predicates/utils")
+require("src/automaton_functions/intersection")
 
 local Automaton = Automaton_module.Automaton
 local Transition = Automaton_module.Transition
@@ -27,14 +28,16 @@ end
 
 function SubsetNFA(nfa1, nfa2)
     local dfa1 = Det(nfa1)
+    dfa1:addTrap()
     local dfa2 = Det(nfa2)
+    dfa2:addTrap()
     local intersection = intersect_dfa(dfa1, dfa2)
     return EquivNFA(dfa1, intersection)
 end
 
 function SubsetRegex(regex1, regex2)
-    local automaton1 = create_glushkov_automaton(regex1)
-    local automaton2 = create_glushkov_automaton(regex2)
+    local automaton1 = create_thompson_automaton(regex1)
+    local automaton2 = create_thompson_automaton(regex2)
 
     SubsetNFA(automaton1, automaton2)
 end

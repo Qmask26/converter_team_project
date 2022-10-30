@@ -8,10 +8,10 @@ require "src/utils/common"
 require "src/predicates/predicates"
 
 local rtree1 = Regexs.Regex:new("(a|b*)")
-local nfa1 = create_thompson_automaton(rtree1)
+local nfa4 = create_thompson_automaton(rtree1)
 
-local rtree2 = Regexs.Regex:new("(a|b*)")
-local nfa2 = create_thompson_automaton(rtree2)
+local rtree2 = Regexs.Regex:new("(a|b*)*")
+local nfa5 = create_thompson_automaton(rtree2)
 
 local rtree3 = Regexs.Regex:new("(a|b)*b")
 local nfa3 = create_glushkov_automaton(rtree3)
@@ -50,6 +50,7 @@ print()
 print('EquivNFA: ' .. tostring(EquivNFA(nfa1, nfa2)))
 print()
 
+print('SubsetNFA :' .. tostring(SubsetNFA(nfa4, nfa5)))
 --print('Equal: ' .. tostring(Equal(nfa1, nfa2)))
 --print('Equiv: ' .. EquivNFA(nfa1, nfa2))
 --print('NFA')
