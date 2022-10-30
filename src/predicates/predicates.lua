@@ -39,7 +39,7 @@ function SubsetRegex(regex1, regex2)
     local automaton1 = create_thompson_automaton(regex1)
     local automaton2 = create_thompson_automaton(regex2)
 
-    SubsetNFA(automaton1, automaton2)
+    return SubsetNFA(automaton1, automaton2)
 end
 
 function Annote(nfa, label_prefix)

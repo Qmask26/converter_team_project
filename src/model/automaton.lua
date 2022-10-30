@@ -152,7 +152,7 @@ function Automaton:getAlphabet()
 end
 
 function Automaton:addTrap()
-    if self.isDFA then
+    if self.isDFA and not self.trap_state then
         self.trap_state = self.states + 1
         self.states = self.states + 1
         local trap_state = self.states
