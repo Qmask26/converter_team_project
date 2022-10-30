@@ -289,20 +289,20 @@ function is_bisimilar(grammar1, grammar2)
     local rules, nonterminals, classes
     rules, nonterminals = grammar_union(rules1, rules2, nonterminals1, nonterminals2)
     rules, nonterminals, classes, nonterm_class_num = division_into_equivalence_classes(rules, nonterminals)
-
-    for i = 1, #start_states_1, 1 do
-        local key = false
-        for j = 1, #start_states_2, 1 do
-            if nonterm_class_num[start_states_1[i]] == nonterm_class_num[start_states_2[j]] then key = true end
-        end
-        if not key then return false end
-    end
     
     -- проверяем на равенство количество классов в одной из грамматик с объединённой
     if #classes ~= #classes1 then return false, classes1, classes2 end
-    
 
     local union_classes = classes_union(classes1, classes2, classes)
+    for i = 1, #start_states_1, 1 do
+        local key = false
+        local class_num_1 = get_index_of_other_class(start_states_1[i], union_classes)
+        for j = 1, #start_states_2, 1 do
+            local class_num_2 = get_index_of_other_class(start_states_2[j], union_classes)
+            if class_num_1 == class_num_2 then key = true end
+        end
+        if not key then return false end
+    end
     
     return true, classes1, classes2, union_classes
 end

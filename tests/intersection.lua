@@ -18,6 +18,6 @@ local dfa2 = Det(nfa)
 dfa2:addTrap()
 print(minimization(dfa2):tostring())
 
-local dfa_intersect = intersect_dfa(dfa1, dfa2)
+local dfa_intersect = minimization(intersect_dfa(dfa1, dfa2))
 print(minimization(dfa_intersect):tostring())
-print(Equal(dfa2, dfa_intersect))
+print(EquivNFA(dfa2, dfa_intersect))
