@@ -23,7 +23,7 @@ local DATA_TYPES = {
 }
 
 
-local CONVETER_FUNCTIONS = {
+local  CONVERTER_FUNCTIONS = {
     Thompson = {
         argNum = 1,
         first = DATA_TYPES.Regex,
@@ -248,61 +248,86 @@ local CONVETER_FUNCTIONS = {
     }
 }
 
-setmetatable(CONVETER_FUNCTIONS.Thompson, {
-    _call = r2nfa.Thompson
-})
-
-setmetatable(CONVETER_FUNCTIONS.Antimirov, {
-    _call = r2nfa.Antimirov
-})
-
-setmetatable(CONVETER_FUNCTIONS.Glushkov, {
-    _call = r2nfa.Glushkov
-})
-
-
-setmetatable(CONVETER_FUNCTIONS.Determinize, {
-    _call = Automaton_functions.Determinize
-})
-
-setmetatable(CONVETER_FUNCTIONS.Minimize, {
-    _call = Automaton_functions.Minimize
-})
-
-setmetatable(CONVETER_FUNCTIONS.Reverse, {
-    _call = Automaton_functions.Reverse
-})
-
-setmetatable(CONVETER_FUNCTIONS.Arden, {
-    _call = Automaton_functions.Arden
-})
-
-setmetatable(CONVETER_FUNCTIONS.RemEps, {
-    _call = Automaton_functions.RemEps
-})
-
-CONVETER_FUNCTIONS.Equiv.call[1] = Predicates.EquivNFA
-CONVETER_FUNCTIONS.Equiv.call[2] = Predicates.EquivRegex
-
-setmetatable(CONVETER_FUNCTIONS.Equal, {
-    _call = Predicates.Equal
-})
-
-setmetatable(CONVETER_FUNCTIONS.Bisimilar, {
-    _call = Predicates.Bisimilar
-})
-
-
-
-for key, value in pairs(CONVETER_FUNCTIONS) do
+for key, value in pairs( CONVERTER_FUNCTIONS) do
     if (value.__call == nil) then
         setmetatable(value, {__call = function () 
         print("*COMPUTED*", key)  end})
     end
 end
 
+setmetatable( CONVERTER_FUNCTIONS.Thompson, {
+     __call = function (x, arg) 
+        return r2nfa.Thompson(arg)
+     end
+})
+
+setmetatable( CONVERTER_FUNCTIONS.Antimirov, {
+    __call = function (x, arg) 
+        return r2nfa.Antimirov(arg)
+     end
+})
+
+setmetatable(CONVERTER_FUNCTIONS.Glushkov, {
+    __call = function (x, arg) 
+        return r2nfa.Glushkov(arg)
+     end
+})
+
+
+setmetatable( CONVERTER_FUNCTIONS.Determinize, {
+    __call = function (x, arg) 
+        return Automaton_functions.Determinize(arg)
+     end
+})
+
+setmetatable( CONVERTER_FUNCTIONS.Minimize, {
+    __call = function (x, arg) 
+        return Automaton_functions.Minimize(arg)
+     end
+})
+
+setmetatable( CONVERTER_FUNCTIONS.Reverse, {
+    __call = function (x, arg) 
+        return Automaton_functions.Reverse(arg)
+     end
+})
+
+setmetatable( CONVERTER_FUNCTIONS.Arden, {
+    __call = function (x, arg) 
+        return Automaton_functions.Arden(arg)
+     end
+})
+
+setmetatable( CONVERTER_FUNCTIONS.RemEps, {
+    __call = function (x, arg) 
+        return Automaton_functions.RemEps(arg)
+     end
+})
+
+ CONVERTER_FUNCTIONS.Equiv.call[1] = function (x, arg1, arg2)
+    return Predicates.EquivNFA(arg1, arg2)
+ end
+
+ CONVERTER_FUNCTIONS.Equiv.call[2] = function (x, arg1, arg2)
+    return Predicates.EquivRegex(arg1, arg2)
+ end
+
+setmetatable( CONVERTER_FUNCTIONS.Equal, {
+    __call = function (x, arg1, arg2) 
+        return Predicates.Equal(arg1, arg2)
+     end
+})
+
+setmetatable( CONVERTER_FUNCTIONS.Bisimilar, {
+    __call = function (x, arg1, arg2) 
+        return Predicates.Bisimilar(arg1, arg2)
+     end
+})
+
+
+
 Metadata = {
-    functions = CONVETER_FUNCTIONS,
+    functions =  CONVERTER_FUNCTIONS,
     dataTypes = DATA_TYPES,
 }
 

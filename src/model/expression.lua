@@ -1,6 +1,7 @@
 local class = require("src/model/middleclass")
 local RM = require("src/model/regex")
 local MetaData = require("src/utils/converter_functions")
+local r2nfa = require("src/r2nfa_converter/module")
 
 Expression = class("Expression")
 Computable = class("Computable")
@@ -22,6 +23,7 @@ local expressionType = {
 
 local identifiersList = {}
 local has = {}
+local varTypes = {}
 
 function Expression:initialize(value, type)
     self.value = value
@@ -42,6 +44,7 @@ function Computable:initialize(name, type, arg1, arg2)
 end
 
 function Computable:compute()
+    local returningType = self.type
     if (self.value == nil) then
         if (self.type == computableType.func) then
             if (self.typecheck and not self:checkArgs()) then
@@ -50,30 +53,38 @@ function Computable:compute()
                 return nil
             end
             if (MetaData.functions.isOverloaded[self.name]) then
-                local func = self:chooseImplementation()
+                local impl = self:chooseImplementation()
+                local func = MetaData.functions[self.name].call[impl]
                 if (self.arg2 == nil) then
                     self.value = func(self.arg1:compute())
+                    
                 else 
                     self.value = func(self.arg1:compute(), self.arg2:compute())
+                    
                 end
+                returningType = MetaData.functions[self.name].result[impl]
             else 
                 if (self.arg2 == nil) then
                     self.value = MetaData.functions[self.name](self.arg1:compute())
                 else
                     self.value = MetaData.functions[self.name](self.arg1:compute(), self.arg2:compute())
                 end
+                returningType = MetaData.functions[self.name].result
             end
+
         elseif (self.type == computableType.variable) then
             if (has[self.name] ~= nil) then
                 self.value = identifiersList[self.name]
             else 
-                self.value = self.arg1:compute()
+                self.value, varTypes[self.name] = self.arg1:compute()
                 identifiersList[self.name] = self.value
                 has[self.name] = true
             end
+            returningType = varTypes[self.name]
         end
     end
-    return self.value
+    print("COMPUTED", self.name, self.value)
+    return self.value, returningType
 end
 
 function Computable:chooseImplementation() 
@@ -87,7 +98,7 @@ function Computable:chooseImplementation()
                     MetaData.functions[self.arg1.name].result[1] == MetaData.dataTypes.DFA or
                     MetaData.functions[self.name].first[1] == MetaData.dataTypes.NFA and
                     MetaData.functions[self.arg1.name].result[2] == MetaData.dataTypes.DFA) then
-                        impl1 =  MetaData.functions[self.name].call[1]
+                        impl1 =  1
                 end
 
                 if (MetaData.functions[self.name].first[2] == MetaData.functions[self.arg1.name].result[1] or
@@ -96,32 +107,36 @@ function Computable:chooseImplementation()
                     MetaData.functions[self.arg1.name].result[1] == MetaData.dataTypes.DFA or
                     MetaData.functions[self.name].first[2] == MetaData.dataTypes.NFA and
                     MetaData.functions[self.arg1.name].result[2] == MetaData.dataTypes.DFA) then
-                        impl1 =  MetaData.functions[self.name].call[2]
+                        impl1 =  2
                 end
             else
                 if (MetaData.functions[self.name].first[1] == MetaData.functions[self.arg1.name].result or
                 MetaData.functions[self.name].first[1] == MetaData.dataTypes.NFA and
                 MetaData.functions[self.arg1.name].result == MetaData.dataTypes.DFA) then
-                    impl1 =  MetaData.functions[self.name].call[1]
+                    impl1 =  1
                 end
 
                 if (MetaData.functions[self.name].first[2] == MetaData.functions[self.arg1.name].result or
                 MetaData.functions[self.name].first[2] == MetaData.dataTypes.NFA and
                 MetaData.functions[self.arg1.name].result == MetaData.dataTypes.DFA) then
-                    impl1 =  MetaData.functions[self.name].call[2]
+                    impl1 =  2
                 end
             end
         else
-            if (MetaData.functions[self.name].first[1] == self.arg1.type or
+            local type = self.arg1.type
+            if (type == 0) then
+                type = varTypes[self.arg1.name]
+            end
+            if (MetaData.functions[self.name].first[1] == type or
             MetaData.functions[self.name].first[1] == MetaData.dataTypes.NFA and
-            self.arg1.type == MetaData.dataTypes.DFA) then
-                impl1 =  MetaData.functions[self.name].call[1]
+            type == MetaData.dataTypes.DFA) then
+                impl1 =  1
             end
 
             if (MetaData.functions[self.name].first[2] == self.arg1.type or
             MetaData.functions[self.name].first[2] == MetaData.dataTypes.NFA and
             self.arg1.type == MetaData.dataTypes.DFA) then
-                impl1 =  MetaData.functions[self.name].call[2]
+                impl1 =  2
             end
         end
 
@@ -134,7 +149,7 @@ function Computable:chooseImplementation()
                     MetaData.functions[self.arg2.name].result[1] == MetaData.dataTypes.DFA or
                     MetaData.functions[self.name].second[1] == MetaData.dataTypes.NFA and
                     MetaData.functions[self.arg2.name].result[2] == MetaData.dataTypes.DFA) then
-                        impl2 =  MetaData.functions[self.name].call[1]
+                        impl2 =  1
                 end
 
                 if (MetaData.functions[self.name].second[2] == MetaData.functions[self.arg2.name].result[1] or
@@ -143,32 +158,36 @@ function Computable:chooseImplementation()
                     MetaData.functions[self.arg2.name].result[1] == MetaData.dataTypes.DFA or
                     MetaData.functions[self.name].second[2] == MetaData.dataTypes.NFA and
                     MetaData.functions[self.arg2.name].result[2] == MetaData.dataTypes.DFA) then
-                        impl2 =  MetaData.functions[self.name].call[2]
+                        impl2 =  2
                 end
             else
                 if (MetaData.functions[self.name].second[1] == MetaData.functions[self.arg2.name].result or
                 MetaData.functions[self.name].second[1] == MetaData.dataTypes.NFA and
                 MetaData.functions[self.arg2.name].result == MetaData.dataTypes.DFA) then
-                    impl2 =  MetaData.functions[self.name].call[1]
+                    impl2 =  1
                 end
 
                 if (MetaData.functions[self.name].second[2] == MetaData.functions[self.arg2.name].result or
                 MetaData.functions[self.name].second[2] == MetaData.dataTypes.NFA and
                 MetaData.functions[self.arg2.name].result == MetaData.dataTypes.DFA) then
-                    impl2 =  MetaData.functions[self.name].call[2]
+                    impl2 =  1
                 end
             end
         else
-            if (MetaData.functions[self.name].second[1] == self.arg2.type or
+            local type = self.arg2.type
+            if (type == 0) then
+                type = varTypes[self.arg2.name]
+            end
+            if (MetaData.functions[self.name].second[1] == type or
             MetaData.functions[self.name].second[1] == MetaData.dataTypes.NFA and
-            self.arg2.type == MetaData.dataTypes.DFA) then
-                impl2 =  MetaData.functions[self.name].call[1]
+            type == MetaData.dataTypes.DFA) then
+                impl2 =  1
             end
 
             if (MetaData.functions[self.name].second[2] == self.arg2.type or
             MetaData.functions[self.name].second[2] == MetaData.dataTypes.NFA and
             self.arg2.type == MetaData.dataTypes.DFA) then
-                impl2 =  MetaData.functions[self.name].call[2]
+                impl2 =  1
             end
         end
     else
@@ -179,7 +198,6 @@ function Computable:chooseImplementation()
         print("Type mismatch")
         os.exit()
     end
-
     return impl1
 end
 
