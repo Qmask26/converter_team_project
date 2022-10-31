@@ -1,4 +1,6 @@
 local Automaton = require("src/model/automaton")
+local Regex = require("src/model/regex")
+local Set = require("src/model/set")
 require("src/utils/common")
 
 eps = Automaton.eps
@@ -90,4 +92,166 @@ function is_transition_in_table(transition, arr)
         end
     end
     return false
+end
+
+
+function linearize(regex)
+    local label = 1
+
+    function annote(regex_node)
+        if regex_node.type == Regex.operations.symbol then
+            regex_node.value = regex_node.value .. label
+            label = label + 1
+        elseif regex_node.type == Regex.operations.concat or regex_node.type == Regex.operations.alt then
+            annote(regex_node.firstChild)
+            annote(regex_node.secondChild)
+        elseif regex_node.type == Regex.operations.iter or regex_node.type == Regex.operations.positive then
+            annote(regex_node.firstChild)
+        end
+    end
+
+    annote(regex.root)
+end
+
+function get_start_possible_symbols_regex(regex)
+    return get_start_possible_symbols(regex.root)
+end
+
+function get_start_possible_symbols(regex)
+    local symbols = Set:new({})
+
+    function get_start_possible_symbols_node(regex_node)
+        if regex_node.type == Regex.operations.symbol then
+            symbols:add(regex_node.value)
+        elseif regex_node.type == Regex.operations.alt then
+            get_start_possible_symbols_node(regex_node.firstChild)
+            get_start_possible_symbols_node(regex_node.secondChild)
+        elseif regex_node.type == Regex.operations.concat then
+            get_start_possible_symbols_node(regex_node.firstChild)
+            if canParseEpsilonRec(regex_node.firstChild) then
+                get_start_possible_symbols_node(regex_node.secondChild)
+            end
+        elseif regex_node.type == Regex.operations.iter or regex_node.type == Regex.operations.positive then
+            get_start_possible_symbols_node(regex_node.firstChild)
+        end
+    end
+
+    get_start_possible_symbols_node(regex)
+    return symbols
+end
+
+function get_finish_possible_symbols_regex(regex)
+    return get_finish_possible_symbols(regex.root)
+end
+
+function get_finish_possible_symbols(regex)
+    local symbols = Set:new({})
+
+    function get_finish_possible_symbols_node(regex_node)
+        if regex_node.type == Regex.operations.symbol then
+            symbols:add(regex_node.value)
+        elseif regex_node.type == Regex.operations.alt then
+            get_finish_possible_symbols_node(regex_node.firstChild)
+            get_finish_possible_symbols_node(regex_node.secondChild)
+        elseif regex_node.type == Regex.operations.concat then
+            get_finish_possible_symbols_node(regex_node.secondChild)
+            if canParseEpsilonRec(regex_node.secondChild) then
+                get_finish_possible_symbols_node(regex_node.firstChild)
+            end
+        elseif regex_node.type == Regex.operations.iter or regex_node.type == Regex.operations.positive then
+            get_finish_possible_symbols_node(regex_node.firstChild)
+        end
+    end
+
+    get_finish_possible_symbols_node(regex)
+    return symbols
+end
+
+function get_possible_symbol_pairs_regex(regex)
+    return get_possible_symbol_pairs(regex.node)
+end
+
+
+function get_possible_symbol_pairs(regex)
+    local symbol_pairs = {}
+
+    local function in_pairs(p)
+        for _, v in pairs(symbol_pairs) do
+            if v[1] == p[1] and v[2] == p[2] then
+                return true
+            end
+        end
+        return false
+    end
+
+    local function get_pairs(regex_node)
+        if regex_node.type == Regex.operations.alt then
+            get_pairs(regex_node.firstChild)
+            get_pairs(regex_node.secondChild)
+        elseif regex_node.type == Regex.operations.concat then
+            local f = get_finish_possible_symbols(regex_node.firstChild)
+            local s = get_start_possible_symbols(regex_node.secondChild)
+            for start in pairs(s.items) do
+                for finish in pairs(f.items) do
+                    local p = {finish, start}
+                    if not in_pairs(p) then
+                        table.insert(symbol_pairs, p)
+                    end
+                end
+            end
+            get_pairs(regex_node.firstChild)
+            get_pairs(regex_node.secondChild)
+        elseif regex_node.type == Regex.operations.iter or regex_node.type == Regex.operations.positive then
+            local f = get_finish_possible_symbols(regex_node.firstChild)
+            local s = get_start_possible_symbols(regex_node.firstChild)
+            for start in pairs(s.items) do
+                for finish in pairs(f.items) do
+                    local p = {finish, start}
+                    if not in_pairs(p) then
+                        table.insert(symbol_pairs, p)
+                    end
+                end
+            end
+            get_pairs(regex_node.firstChild)
+        elseif regex_node.type == Regex.operations.symbol then
+            return
+        end
+    end
+    get_pairs(regex.root)
+    return symbol_pairs
+end
+
+function dump(o)
+    if type(o) == 'table' then
+        local s = '{ '
+        for k,v in pairs(o) do
+            if type(k) ~= 'number' then k = '"'..k..'"' end
+            s = s .. '['..k..'] = ' .. dump(v) .. ','
+        end
+        return s .. '} '
+    else
+        return tostring(o)
+    end
+ end
+
+function compare(src, tmp, _reverse)
+        if (type(src) ~= "table" or type(tmp) ~= "table") then
+            return src == tmp
+        end
+
+        for k, v in next, src do
+            if type(v) == "table" then
+                if type(tmp[k]) ~= "table" or not compare(v, tmp[k]) then
+                    return false
+                end
+            else
+                if tmp[k] ~= v then
+                    return false
+                end
+            end
+        end
+        return _reverse and true or compare(tmp, src, true)
+    end
+    tableCompare = function(src, tmp, checkMeta)
+    return compare(src, tmp) and (not checkMeta or compare(getmetatable(src), getmetatable(tmp)))
 end

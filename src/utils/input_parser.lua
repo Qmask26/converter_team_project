@@ -5,11 +5,19 @@ local FL = require("src/utils/converter_functions")
 identifiersList = {}
 
 Parser = class("Parser")
+tchck = require("src/typecheck/static")
+
+function Parser:initialize(typecheck)
+    self.typecheck = typecheck
+end
 
 function Parser:parse(filename)
     local expressions = {}
     for line in io.lines(filename) do
         local expression = nil
+        if (self.typecheck) then
+            line = tchck:typecheck(line)
+        end
         if (line:find("=") ~= nil) then
             expression = EM.expression:new(Parser:parseDeclaration(line), EM.expressionType.computable)
         elseif (line:lower():find("test") ~= nil) then

@@ -28,21 +28,44 @@ RegexNode = class("RegexNode")
 --Класс Regex имеет единственное поле - root, корень дерева, представляющего regex
 function Regex:initialize(regex)
     self.root = RegexNode:new(regex, #regex ~= 0)
-    self.alphabet = parseNodeAlphabet(self.root)
+    self.alphabet = parseNodeAlphabet(self.root, #regex ~= 0)
 end
 
-function parseNodeAlphabet(regex)
+function parseNodeAlphabet(regex, parse)
+    if not parse then
+        return Set:new({})
+    end
     if regex.type == Regex_module.operations.symbol then
         local res = Set:new({regex.value})
         return res
     elseif regex.nchildren == 1 then
-        local res = parseNodeAlphabet(regex.firstChild)
+        local res = parseNodeAlphabet(regex.firstChild, true)
         return res
     else
-        local res1 = parseNodeAlphabet(regex.firstChild)
-        local res2 = parseNodeAlphabet(regex.secondChild)
+        local res1 = parseNodeAlphabet(regex.firstChild, true)
+        local res2 = parseNodeAlphabet(regex.secondChild, true)
         res2:union(res1)
         return res2
+    end
+end
+
+function canParseEpsilon(regex)
+    return canParseEpsilonRec(regex.root)
+end
+
+function canParseEpsilonRec(regex)
+    if regex.type == Regex_module.operations.alt then
+        return canParseEpsilonRec(regex.firstChild) or canParseEpsilonRec(regex.secondChild)
+    elseif regex.type == Regex_module.operations.concat then
+        return canParseEpsilonRec(regex.firstChild) and canParseEpsilonRec(regex.secondChild)
+    elseif regex.type == Regex_module.operations.iter then
+        return true
+    elseif regex.type == Regex_module.operations.positive then
+        return canParseEpsilonRec(regex.firstChild)
+    elseif regex.type == Regex_module.operations.symbol then
+        return false
+    elseif regex.type == Regex_module.operations.empty_set then
+        return true
     end
 end
 
@@ -53,11 +76,12 @@ end
 --Поле nchildren содержит количество дочерних вершин (максимум две). Им соответствуют поля firstChild и secondChild
 
 function RegexNode:initialize(regex, parse)
+    local regex = trimBrackets(regex)
     self.value = regex
     self.value_for_print = self.value
     if (self.value == "") then
         self.value_for_print = "_epsilon_"
-        self.type = Regex_module.empty_set
+        self.type = Regex_module.operations.empty_set
         self.nchildren = 0
     end
     if parse then
@@ -159,7 +183,7 @@ function whatTypeOfRegex(regex)
 end
 
 function trimBrackets(regex) 
-    if (regex:byte(1) == bytes["("] and cbsEndsAt(regex, 1) == #regex) then
+    while (regex:byte(1) == bytes["("] and cbsEndsAt(regex, 1) == #regex) do
         regex = regex:sub(2, #regex - 1)
     end
     return regex

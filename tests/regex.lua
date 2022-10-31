@@ -72,3 +72,13 @@ assert(deriv:str() == "a (b)*" or deriv:str() == "(b)* a")
 local r = Regexs.RegexNode:new("a|(b)*a", true)
 local deriv = antimirov_derivative("a", r)
 assert(deriv:str() == "") -- equals "epsilon"
+
+
+local re = Regexs.Regex:new("a|(b)*a")
+assert(canParseEpsilon(re) == false)
+
+local re = Regexs.Regex:new("a|(b)*")
+assert(canParseEpsilon(re) == true)
+
+local re = Regexs.Regex:new("")
+assert(canParseEpsilon(re) == true)
