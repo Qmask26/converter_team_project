@@ -26,7 +26,7 @@ function pumplength(rtree, max_n)
 	if not max_n then max_n = 100 end
 
 	local nfa = create_thompson_automaton(rtree)
-	local dfa_trap = minimization(nfa)
+	local dfa_trap = minimization(Det(nfa))
 	local alphabet = dfa_trap:getAlphabet()
 	dfa_trap:addTrap(alphabet)
 	local dfa = minimization(dfa_trap) -- remove trap :)
