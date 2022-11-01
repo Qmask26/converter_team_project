@@ -13,8 +13,8 @@ local Automaton = Automaton_module.Automaton
 local Transition = Automaton_module.Transition
 
 function EquivNFA(nfa1, nfa2)
-    local dfa1 = minimization(Det(nfa1))
-    local dfa2 = minimization(Det(nfa2))
+    local dfa1 = minimization(nfa1)
+    local dfa2 = minimization(nfa2)
 
     return Equal(dfa1, dfa2)
 end

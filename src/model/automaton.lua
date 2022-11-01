@@ -57,7 +57,11 @@ function Automaton:initialize(statesNumber, finalStates, transitions, isDFA, sta
                 self.transitions[t.from][t.symbol][t.label] = {t.to}
             end
         else
-            table.insert(self.transitions[t.from][t.symbol][t.label], t.to)
+            if self.isDFA then
+                self.transitions[t.from][t.symbol][t.label] = t.to
+            else
+                table.insert(self.transitions[t.from][t.symbol][t.label], t.to)
+            end
         end
     end
 end
