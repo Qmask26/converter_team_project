@@ -1,6 +1,6 @@
 local Regexs = require("src/model/regex")
 require "src/derivatives/utils"
-
+require "src/utils/common"
 
 function simplify_outer(regex_node)
 	if regex_node.type == Regexs.operations.concat then
@@ -51,7 +51,7 @@ function brzozovski_derivative(symbol, regex_node)
 		local first_child_deriv = brzozovski_derivative(symbol, regex_node.firstChild)
 		local second_child_deriv = brzozovski_derivative(symbol, regex_node.secondChild)
 		res = simplify_outer(new_regexnode(
-			first_child_deriv.value .. "|" .. second_child_deriv.value,
+			"("..first_child_deriv.value.."|"..second_child_deriv.value..")",
 			Regexs.operations.alt,
 			2,
 			first_child_deriv,
@@ -69,7 +69,7 @@ function brzozovski_derivative(symbol, regex_node)
 		if check_if_epsilon_in_regex(regex_node.firstChild) then
 			local second_child_deriv = brzozovski_derivative(symbol, regex_node.secondChild)
 			res = simplify_outer(new_regexnode(
-				left_node.value .. "|" .. second_child_deriv.value,
+				"("..left_node.value.."|"..second_child_deriv.value..")",
 				Regexs.operations.alt,
 				2,
 				left_node,
