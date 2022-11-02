@@ -41,7 +41,7 @@ assert(deriv.value_for_print == "_epsilon_")
 
 local r = Regexs.RegexNode:new("aa|a(b)*", true)
 local deriv = brzozovski_derivative("a", r)
-assert(deriv.value == "a|(b)*")
+assert(deriv.value == "(a|(b)*)")
 local deriv = brzozovski_derivative_word("aa", r)
 assert(deriv.value_for_print == "_epsilon_")
 
