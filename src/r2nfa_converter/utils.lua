@@ -220,3 +220,38 @@ function get_possible_symbol_pairs(regex)
     get_pairs(regex.root)
     return symbol_pairs
 end
+
+function dump(o)
+    if type(o) == 'table' then
+        local s = '{ '
+        for k,v in pairs(o) do
+            if type(k) ~= 'number' then k = '"'..k..'"' end
+            s = s .. '['..k..'] = ' .. dump(v) .. ','
+        end
+        return s .. '} '
+    else
+        return tostring(o)
+    end
+ end
+
+function compare(src, tmp, _reverse)
+        if (type(src) ~= "table" or type(tmp) ~= "table") then
+            return src == tmp
+        end
+
+        for k, v in next, src do
+            if type(v) == "table" then
+                if type(tmp[k]) ~= "table" or not compare(v, tmp[k]) then
+                    return false
+                end
+            else
+                if tmp[k] ~= v then
+                    return false
+                end
+            end
+        end
+        return _reverse and true or compare(tmp, src, true)
+    end
+    tableCompare = function(src, tmp, checkMeta)
+    return compare(src, tmp) and (not checkMeta or compare(getmetatable(src), getmetatable(tmp)))
+end

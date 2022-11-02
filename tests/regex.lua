@@ -30,14 +30,24 @@ print("Test brzozovski derivatives")
 local r = Regexs.RegexNode:new("a", true)
 local deriv = brzozovski_derivative("a", r)
 assert(deriv.value == "")
+local deriv = brzozovski_derivative_word("aa", r)
+assert(deriv.type == Regexs.operations.empty_set)
 
 local r = Regexs.RegexNode:new("a|ba", true)
 local deriv = brzozovski_derivative("a", r)
+assert(deriv.value_for_print == "_epsilon_")
+local deriv = brzozovski_derivative_word("ba", r)
 assert(deriv.value_for_print == "_epsilon_")
 
 local r = Regexs.RegexNode:new("aa|a(b)*", true)
 local deriv = brzozovski_derivative("a", r)
 assert(deriv.value == "a|(b)*")
+local deriv = brzozovski_derivative_word("aa", r)
+assert(deriv.value_for_print == "_epsilon_")
+
+local r = Regexs.RegexNode:new("a(b)*", true)
+local deriv = brzozovski_derivative_word("abb", r)
+assert(deriv.value == "(b)*")
 
 --
 

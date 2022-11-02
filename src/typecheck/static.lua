@@ -182,13 +182,30 @@ function Typechecker:checkRightSide(right)
         funcs[#funcs + 1] = lines[2]
         local currentType = Typechecker:whatType(funcs[#funcs])
         for i = #funcs - 1, 1, -1 do
-            if (Metadata.functions[funcs[i]].first == currentType or (
-                Metadata.functions[funcs[i]].first == Metadata.dataTypes.NFA and 
-                currentType == Metadata.dataTypes.DFA)) then
-                currentType = Metadata.functions[funcs[i]].result
+            if (Metadata.functions.isOverloaded[funcs[i]] == true) then
+                if (Metadata.functions[funcs[i]].first[1] == currentType or (
+                    Metadata.functions[funcs[i]].first[1] == Metadata.dataTypes.NFA and 
+                    currentType == Metadata.dataTypes.DFA)) then
+                    currentType = Metadata.functions[funcs[i]].result[1]
+                elseif (Metadata.functions[funcs[i]].first[2] == currentType or (
+                        Metadata.functions[funcs[i]].first[2] == Metadata.dataTypes.NFA and 
+                        currentType == Metadata.dataTypes.DFA)) then
+                        currentType = Metadata.functions[funcs[i]].result[2]
+                    
+                else 
+                     
+                    return "Type mismatch", nil
+                end
             else 
-                return "Type mismatch", nil
-                
+                if (Metadata.functions[funcs[i]].first == currentType or (
+                    Metadata.functions[funcs[i]].first == Metadata.dataTypes.NFA and 
+                    currentType == Metadata.dataTypes.DFA)) then
+                    currentType = Metadata.functions[funcs[i]].result
+                else 
+                     
+                    return "Type mismatch", nil
+                    
+                end
             end
         end
         return nil, Metadata.functions[funcs[1]].result
@@ -203,17 +220,35 @@ function Typechecker:checkRightSide(right)
         if (Typechecker:match(funcs[#funcs - 2], lines[2], lines[3])) then
             currentType = Metadata.functions[funcs[#funcs - 2]].result
         else 
+            print("Current type", currentType)
             return "Type mismatch", nil
         end
         funcs[#funcs - 2] = EM.computable:new(funcs[#funcs - 2], EM.computableType.func, funcs[#funcs - 1], funcs[#funcs])
         for i = #funcs - 3, 1, -1 do
-            if (Metadata.functions[funcs[i]].first == currentType or
-                Metadata.functions[funcs[i]].first == Metadata.dataTypes.NFA and
-                currentType == Metadata.dataTypes.DFA) then
-                    currentType = Metadata.functions[funcs[i]].result
-                else
+            if (Metadata.functions.isOverloaded[funcs[i]] == true) then
+                if (Metadata.functions[funcs[i]].first[1] == currentType or (
+                    Metadata.functions[funcs[i]].first[1] == Metadata.dataTypes.NFA and 
+                    currentType == Metadata.dataTypes.DFA)) then
+                    currentType = Metadata.functions[funcs[i]].result[1]
+                elseif (Metadata.functions[funcs[i]].first[2] == currentType or (
+                        Metadata.functions[funcs[i]].first[2] == Metadata.dataTypes.NFA and 
+                        currentType == Metadata.dataTypes.DFA)) then
+                        currentType = Metadata.functions[funcs[i]].result[2]
+                    
+                else 
+                     
                     return "Type mismatch", nil
                 end
+            else
+                if (Metadata.functions[funcs[i]].first == currentType or
+                    Metadata.functions[funcs[i]].first == Metadata.dataTypes.NFA and
+                    currentType == Metadata.dataTypes.DFA) then
+                    currentType = Metadata.functions[funcs[i]].result
+                else
+                     
+                    return "Type mismatch", nil
+                end
+            end
         end
         return nil, Metadata.functions[funcs[1]].result
     end
@@ -238,35 +273,86 @@ function Typechecker:checkPredicate(predicate)
     local predicate = trim(lines[1])
     local arg1 = trim(lines[2])
     local arg2 = lines[3]
-    local match =  (Typechecker:whatType(arg1) == Metadata.functions[predicate].first or
-                    Typechecker:whatType(arg1) == Metadata.dataTypes.DFA and
-                    Metadata.functions[predicate].first == Metadata.dataTypes.NFA)
-    if (arg2 ~= nil) then
-        arg2 = trim(arg2)
-        match =  match and (Typechecker:whatType(arg2) == Metadata.functions[predicate].second or
-                    Typechecker:whatType(arg2) == Metadata.dataTypes.DFA and
-                    Metadata.functions[predicate].second == Metadata.dataTypes.NFA)
-    end
+    if (Metadata.functions.isOverloaded[predicate] == nil) then
+        local match =  (Typechecker:whatType(arg1) == Metadata.functions[predicate].first or
+                        Typechecker:whatType(arg1) == Metadata.dataTypes.DFA and
+                        Metadata.functions[predicate].first == Metadata.dataTypes.NFA)
+        if (arg2 ~= nil) then
+            arg2 = trim(arg2)
+            match =  match and (Typechecker:whatType(arg2) == Metadata.functions[predicate].second or
+                        Typechecker:whatType(arg2) == Metadata.dataTypes.DFA and
+                        Metadata.functions[predicate].second == Metadata.dataTypes.NFA)
+        end
 
-    if (not match) then
-        return "Type mismatch"
-    end
+        if (not match) then
+            return "Type mismatch"
+        end
 
-    return nil
+        return nil
+    else
+        local match = true
+        if (arg2 == nil) then
+            match =  (Typechecker:whatType(arg1) == Metadata.functions[predicate].first[1] or
+            Typechecker:whatType(arg1) == Metadata.functions[predicate].first[2] or
+            Typechecker:whatType(arg1) == Metadata.dataTypes.DFA and
+            Metadata.functions[predicate].first[1] == Metadata.dataTypes.NFA or
+            Typechecker:whatType(arg1) == Metadata.dataTypes.DFA and
+            Metadata.functions[predicate].first[2] == Metadata.dataTypes.NFA)
+        else
+            match =  ((Typechecker:whatType(arg1) == Metadata.functions[predicate].first[1] or 
+                       Typechecker:whatType(arg1) == Metadata.dataTypes.DFA and
+                       Metadata.functions[predicate].first[1] == Metadata.dataTypes.NFA) and
+                       (Typechecker:whatType(arg2) == Metadata.functions[predicate].second[1] or 
+                       Typechecker:whatType(arg2) == Metadata.dataTypes.DFA and
+                       Metadata.functions[predicate].second[1] == Metadata.dataTypes.NFA) or 
+                       (Typechecker:whatType(arg1) == Metadata.functions[predicate].first[2] or 
+                       Typechecker:whatType(arg1) == Metadata.dataTypes.DFA and
+                       Metadata.functions[predicate].first[2] == Metadata.dataTypes.NFA) and
+                       (Typechecker:whatType(arg2) == Metadata.functions[predicate].second[2] or 
+                       Typechecker:whatType(arg2) == Metadata.dataTypes.DFA and
+                       Metadata.functions[predicate].second[2] == Metadata.dataTypes.NFA))
+        end
+
+        if (not match) then
+            return "Type mismatch"
+        end
+
+        return nil
+    end
 end
 
 function Typechecker:match(func, arg1, arg2)
-    local match = Metadata.functions[func].first == Typechecker:whatType(arg1) or
-                  Metadata.functions[func].first == Metadata.dataTypes.NFA and
-                  Typechecker:whatType(arg1) == Metadata.dataTypes.DFA
+    if (Metadata.functions.isOverloaded[func] ~= true) then
+        local match = Metadata.functions[func].first == Typechecker:whatType(arg1) or
+                    Metadata.functions[func].first == Metadata.dataTypes.NFA and
+                    Typechecker:whatType(arg1) == Metadata.dataTypes.DFA
 
-    if (arg2 ~= nil) then
-        match = match and (Metadata.functions[func].second == Typechecker:whatType(arg2) or
-            Metadata.functions[func].second == Metadata.dataTypes.NFA and
-            Typechecker:whatType(arg2) == Metadata.dataTypes.DFA)
+        if (arg2 ~= nil) then
+            match = match and (Metadata.functions[func].second == Typechecker:whatType(arg2) or
+                Metadata.functions[func].second == Metadata.dataTypes.NFA and
+                Typechecker:whatType(arg2) == Metadata.dataTypes.DFA)
+        end
+
+        return match        
+    else 
+        local match = (Metadata.functions[func].first[1] == Typechecker:whatType(arg1) or
+        Metadata.functions[func].first[1] == Metadata.dataTypes.NFA and
+        Typechecker:whatType(arg1) == Metadata.dataTypes.DFA) or 
+        (Metadata.functions[func].first[2] == Typechecker:whatType(arg1) or
+        Metadata.functions[func].first[2] == Metadata.dataTypes.NFA and
+        Typechecker:whatType(arg1) == Metadata.dataTypes.DFA)
+
+        if (arg2 ~= nil) then
+            match = match and ((Metadata.functions[func].second[1] == Typechecker:whatType(arg2) or
+                Metadata.functions[func].second[1] == Metadata.dataTypes.NFA and
+                Typechecker:whatType(arg2) == Metadata.dataTypes.DFA) or 
+                (Metadata.functions[func].second[2] == Typechecker:whatType(arg2) or
+                Metadata.functions[func].second[2] == Metadata.dataTypes.NFA and
+                Typechecker:whatType(arg2) == Metadata.dataTypes.DFA) )
+        end
+
+        return match
     end
-
-    return match
 end
 
 

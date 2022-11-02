@@ -8,33 +8,57 @@ Grammar_module = {}
 Grammar = class("Grammar")
 
 function Grammar:initialize(automaton, nonterm_prefix, isDFA, purpose)
-	if purpose == "transition" then
-		self.nonterm_prefix = nonterm_prefix
-		self.nonterminals = Set:new({})
-		self.terminals = Set:new({})
-		self.rules = {}
-	elseif purpose == "reverse" then
-		self.nonterm_prefix = nonterm_prefix
-		self.nonterminals = Set:new({})
-		self.terminals = Set:new({})
-		self.rules = {}
-		if isDFA then
-			print('TODO')
-			self:from_DFA(automaton)
-		else
-			self:from_NFA_reverse(automaton)
+	self.nonterm_prefix = nonterm_prefix
+	self.nonterminals = Set:new({})
+	self.terminals = Set:new({})
+	self.rules = {}
+	self.start_states_raw = {}
+	self.final_states_raw = {}
+	if automaton ~= nil then
+		for _, state in pairs(automaton.start_states_raw) do
+			table.insert(self.start_states_raw, nonterm_prefix .. tostring(state))
 		end
-	else
-		self.nonterm_prefix = nonterm_prefix
-		self.nonterminals = Set:new({})
-		self.terminals = Set:new({})
-		self.rules = {}
+		for _, state in pairs(automaton.final_states_raw) do
+			table.insert(self.final_states_raw, nonterm_prefix .. tostring(state))
+		end
+	end
+	if purpose == "state" then
 		if isDFA then
-			print('TODO')
 			self:from_DFA(automaton)
 		else
 			self:from_NFA(automaton)
 		end
+	elseif purpose == "reverse" then
+		if isDFA then
+			self:from_DFA_reverse(automaton)
+		else
+			self:from_NFA_reverse(automaton)
+		end
+	end
+end
+
+function Grammar:from_DFA(automaton)
+    for state_from, table_symbols in pairs(automaton.transitions) do
+    	local state_from_s = self.nonterm_prefix .. tostring(state_from)
+    	self.nonterminals:add(state_from_s)
+        for symbol, table_labels in pairs(table_symbols) do
+			for label, state_to in pairs(table_labels) do
+				if not (symbol == "" or symbol == Automaton.eps) then self.terminals:add(symbol) end
+				if not self.rules[state_from_s] then self.rules[state_from_s] = {} end
+
+				local state_to_s = self.nonterm_prefix .. tostring(state_to)
+				self.nonterminals:add(state_to_s)
+				table.insert(self.rules[state_from_s], {symbol, state_to_s})
+			end
+        end
+    end
+
+    -- check final states and fill with empty table
+    for state, is_final in pairs(automaton.finality) do
+    	local state_s = self.nonterm_prefix .. tostring(state)
+    	if is_final and not key_in_table(state_s, self.rules) then 
+    		self.rules[state_s] = {{}}
+    	end
 	end
 end
 
@@ -69,10 +93,27 @@ function Grammar:from_NFA(automaton)
 	end
 end
 
+function Grammar:from_DFA_reverse(automaton)
+    for state_from, table_symbols in pairs(automaton.transitions) do
+    	local state_from_s = self.nonterm_prefix .. tostring(state_from)
+		if string_match(self.start_states_raw, state_from_s) then self.rules[state_from_s] = {{}} end
+    	self.nonterminals:add(state_from_s)
+        for symbol, table_labels in pairs(table_symbols) do
+			for label, state_to in pairs(table_labels) do
+				if not (symbol == "" or symbol == Automaton.eps) then self.terminals:add(symbol) end
+				local state_to_s = self.nonterm_prefix .. tostring(state_to)
+				if not self.rules[state_to_s] then self.rules[state_to_s] = {} end
+				self.nonterminals:add(state_to_s)
+				table.insert(self.rules[state_to_s], {symbol, state_from_s})
+        	end
+        end
+    end
+end
+
 function Grammar:from_NFA_reverse(automaton)
     for state_from, table_symbols in pairs(automaton.transitions) do
     	local state_from_s = self.nonterm_prefix .. tostring(state_from)
-		if state_from == 1 then self.rules[state_from_s] = {{}} end
+		if string_match(self.start_states_raw, state_from_s) then self.rules[state_from_s] = {{}} end
     	self.nonterminals:add(state_from_s)
         for symbol, table_labels in pairs(table_symbols) do
             local states_to = table_labels[""]
