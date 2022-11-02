@@ -166,7 +166,6 @@ function Automaton:addTrap(alphabet)
         local trap_state = self.states
         self.finality[trap_state] = false
 
-        local alphabet
         if not alphabet then
             alphabet = self:getAlphabet()
         end
