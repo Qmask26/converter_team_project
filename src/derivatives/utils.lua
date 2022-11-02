@@ -14,7 +14,7 @@ function node_is_empty_string(regex_node)
 	return regex_node.type == Regexs.operations.symbol and regex_node.value == ''
 end
 
-function check_if_epsilon_in_regex(regex_node)
+function check_if_epsilon_in_regex_node(regex_node)
 	if (regex_node.type == Regexs.operations.iter) then
 		return true
 	elseif (regex_node.type == Regexs.operations.alt) then
@@ -23,7 +23,7 @@ function check_if_epsilon_in_regex(regex_node)
 		elseif node_is_empty_string(regex_node.secondChild) then
 			return true
 		else
-			return check_if_epsilon_in_regex(regex_node.firstChild) or check_if_epsilon_in_regex(regex_node.secondChild)
+			return check_if_epsilon_in_regex_node(regex_node.firstChild) or check_if_epsilon_in_regex_node(regex_node.secondChild)
 		end
 	end
 
