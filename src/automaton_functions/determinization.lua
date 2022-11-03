@@ -143,9 +143,13 @@ function addStart(nfa)
     return Automaton.Automaton:new(states, final, trs, isDFA, start)
 end
 
-function Det(nfaIn)
+function Det(nfaIn, out)
     if nfaIn.isDFA then return nfaIn end
     local nfa = addStart(nfaIn)
+    if out == true then
+        print("Determinization -> Connect all initial states")
+        print(nfa:tostring())
+    end
     
     local start = 1
     local tr = {}
@@ -205,6 +209,10 @@ function Det(nfaIn)
         end
     end
     local automaton = Automaton.Automaton:new(#Q, F, tr, true, S)
+    if out == true then
+        print("Determinization -> resulting automaton:")
+        print(automaton:tostring())
+    end
     return automaton
 end
 
