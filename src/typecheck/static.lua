@@ -141,6 +141,10 @@ end
 function Typechecker:typecheck(line)
     local lines = {}
     local error = nil
+    if (line:find("!!") ~= nil) then
+        line = line:sub(1, line:find("!!") - 1)
+        print(line)
+    end
         if (line:find("=") ~= nil) then
             line = removeExtraOps(line)
              error = Typechecker:checkDeclaration(line)
@@ -220,7 +224,6 @@ function Typechecker:checkRightSide(right)
         if (Typechecker:match(funcs[#funcs - 2], lines[2], lines[3])) then
             currentType = Metadata.functions[funcs[#funcs - 2]].result
         else 
-            print("Current type", currentType)
             return "Type mismatch", nil
         end
         funcs[#funcs - 2] = EM.computable:new(funcs[#funcs - 2], EM.computableType.func, funcs[#funcs - 1], funcs[#funcs])

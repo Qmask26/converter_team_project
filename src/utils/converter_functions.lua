@@ -263,64 +263,65 @@ setmetatable( CONVERTER_FUNCTIONS.Thompson, {
 
 setmetatable( CONVERTER_FUNCTIONS.Antimirov, {
     __call = function (x, arg) 
-        return r2nfa.Antimirov(arg)
+        return r2nfa.Antimirov(arg, needToPrintStepByStep)
      end
 })
 
 setmetatable(CONVERTER_FUNCTIONS.Glushkov, {
     __call = function (x, arg) 
-        return r2nfa.Glushkov(arg)
+        return r2nfa.Glushkov(arg, needToPrintStepByStep)
      end
 })
 
 
 setmetatable( CONVERTER_FUNCTIONS.Determinize, {
     __call = function (x, arg) 
-        return Automaton_functions.Determinize(arg)
+        return Automaton_functions.Determinize(arg, needToPrintStepByStep)
      end
 })
 
 setmetatable( CONVERTER_FUNCTIONS.Minimize, {
     __call = function (x, arg) 
-        return Automaton_functions.Minimize(arg)
+        return Automaton_functions.Minimize(arg, needToPrintStepByStep)
      end
 })
 
 setmetatable( CONVERTER_FUNCTIONS.Reverse, {
     __call = function (x, arg) 
-        return Automaton_functions.Reverse(arg)
+        return Automaton_functions.Reverse(arg, needToPrintStepByStep)
      end
 })
 
 setmetatable( CONVERTER_FUNCTIONS.Arden, {
     __call = function (x, arg) 
-        return Automaton_functions.Arden(arg)
+        return Automaton_functions.Arden(arg, needToPrintStepByStep)
      end
 })
 
 setmetatable( CONVERTER_FUNCTIONS.RemEps, {
     __call = function (x, arg) 
-        return Automaton_functions.RemEps(arg)
+        return Automaton_functions.RemEps(arg, needToPrintStepByStep)
      end
 })
 
  CONVERTER_FUNCTIONS.Equiv.call[1] = function (x, arg1, arg2)
-    return Predicates.EquivNFA(arg1, arg2)
+    return Predicates.EquivNFA(arg1, arg2, needToPrintStepByStep)
  end
 
  CONVERTER_FUNCTIONS.Equiv.call[2] = function (x, arg1, arg2)
-    return Predicates.EquivRegex(arg1, arg2)
+    return Predicates.EquivRegex(arg1, arg2, needToPrintStepByStep)
  end
 
 setmetatable( CONVERTER_FUNCTIONS.Equal, {
     __call = function (x, arg1, arg2) 
-        return Predicates.Equal(arg1, arg2)
+        return Predicates.Equal(arg1, arg2, needToPrintStepByStep)
      end
 })
 
 setmetatable( CONVERTER_FUNCTIONS.Bisimilar, {
     __call = function (x, arg1, arg2) 
-        return Predicates.Bisimilar(arg1, arg2)
+        print(needToPrintStepByStep)
+        return Predicates.Bisimilar(arg1, arg2, needToPrintStepByStep)
      end
 })
 

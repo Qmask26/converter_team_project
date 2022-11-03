@@ -15,6 +15,10 @@ function Parser:parse(filename)
     local expressions = {}
     for line in io.lines(filename) do
         local expression = nil
+        if (line:find("!!") ~= nil) then
+            needToPrintStepByStep = true
+            line = line:sub(1, line:find("!!") - 1)
+        end
         if (self.typecheck) then
             line = tchck:typecheck(line)
         end
@@ -26,6 +30,10 @@ function Parser:parse(filename)
             expression = EM.expression:new(Parser:parsePredicate(line), EM.expressionType.computable)
         end
         expressions[#expressions + 1] = expression
+        if (expression.type == EM.expressionType.computable) then
+            expression.value:compute()
+        end
+        needToPrintStepByStep = nil
     end
     return expressions
 end

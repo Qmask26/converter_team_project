@@ -83,7 +83,6 @@ function Computable:compute()
             returningType = varTypes[self.name]
         end
     end
-    print("COMPUTED", self.name, self.value)
     return self.value, returningType
 end
 

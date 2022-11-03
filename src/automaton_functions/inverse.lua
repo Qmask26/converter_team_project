@@ -23,3 +23,5 @@ function inverse(automaton, debug)
     end
     return res
 end
+
+return inverse
