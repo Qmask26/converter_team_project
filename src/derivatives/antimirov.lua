@@ -2,8 +2,14 @@ local Regexs = require("src/model/regex")
 local Set = require("src/model/set")
 require "src/derivatives/utils"
 
-function antimirov_derivative(symbol, regex)
-	return antimirov_derivative_rec(symbol, regex.root)
+function antimirov_derivative(symbol, regex, verbose)
+	print_if_verbose("Antimirov derivative from: "..regex.root.value, verbose)
+	print_if_verbose("taking derivative by: "..symbol, verbose)
+	local res = antimirov_derivative_rec(symbol, regex.root)
+
+	print_if_verbose("Antimirov derivative result: ".."{"..res:str().."}", verbose)
+
+	return res
 end
 
 function antimirov_derivative_rec(symbol, regex_node)
