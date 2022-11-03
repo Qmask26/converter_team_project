@@ -22,8 +22,10 @@ function prefix_in_set(prefix, seen_prefixes)
 	return false
 end
 
-function pumplength(rtree, max_n)
-	if not max_n then max_n = 100 end
+function pumplength(rtree, verbose)
+	print_if_verbose("Finding pumplength of regex: "..rtree.root.value, verbose)
+
+	local max_n = 100
 
 	local nfa = create_thompson_automaton(rtree)
 	local dfa_trap = minimization(Det(nfa))
@@ -102,7 +104,11 @@ function pumplength(rtree, max_n)
 		n = n + 1
 	end
 
-	if n == max_n + 1 then return 0 end
+	if n == max_n + 1 then 
+		print_if_verbose("MAX N is reached. So pumplength is 0", verbose)
+		return 0 
+	end
 
+	print_if_verbose("Pumplength is "..tostring(n), verbose)
 	return n
 end
