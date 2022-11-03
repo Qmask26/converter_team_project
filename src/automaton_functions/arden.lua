@@ -153,21 +153,25 @@ local function ripState(nfa, state)
     return Automaton.Automaton:new(nfa.states - 1, finalStates, transitions, false, startStates)
 end
 
-function Arden(nfaIn)
+function Arden(nfaIn, out)
     local nfa
     if #nfaIn.start_states_raw > 1 then nfa = addStart(nfaIn) 
     else
         nfa = nfaIn
     end
-    print("Arden -> Connect all initial states:")
-    print(nfaIn:tostring())
+    if out == true then
+        print("Arden -> Connect all initial states:")
+        print(nfaIn:tostring())
+    end
     local new_nfa = modifyNFA(nfa)
     while new_nfa.states > 2 do
         new_nfa = ripState(new_nfa, 1)
     end
     local r = Regex.Regex:new(new_nfa.transitions_raw[1].symbol)
-    print("Arden -> regex:")
-    print(r.root.value)
+    if out == true then
+        print("Arden -> regex:")
+        print(r.root.value)
+    end
     return r
 end
 

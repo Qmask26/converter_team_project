@@ -68,15 +68,17 @@ local function find_path(nfa, path, from, to, visited)
         end
     end
 end
-function SemDet(in_nfa) 
+function SemDet(in_nfa, out) 
     local reg = Arden(in_nfa)
     local nfa
     if #in_nfa.start_states_raw > 1 then nfa = addStart(in_nfa) 
     else
         nfa = in_nfa
     end
-    print("SemDet -> Connect all initial states:")
-    print(nfa:tostring())
+    if out == true then
+        print("SemDet -> Connect all initial states:")
+        print(nfa:tostring())
+    end
     local alph = getAlphabet(nfa)
     local uncert = uncertStates(nfa)
     for i = 1, #uncert, 1 do 
@@ -102,14 +104,18 @@ function SemDet(in_nfa)
                     end
                 end 
                 if check == false then  
-                    print("SemDet -> result:")
-                    print(false)
+                    if out == true then
+                        print("SemDet -> result:")
+                        print(false)
+                    end
                     return false 
                 end
             end
         end
     end
-    print("SemDet -> result:")
-    print(true)
+    if out == true then
+        print("SemDet -> result:")
+        print(true)
+    end
     return true
 end
