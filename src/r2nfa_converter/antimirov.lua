@@ -5,7 +5,7 @@ require("src/r2nfa_converter/utils")
 require("src/derivatives/antimirov")
 require("src/utils/common")
 
-function create_antimirov_automaton(regex)
+function create_antimirov_automaton(regex, debug)
     local alphabet = {}
     local visited = Set:new({})
     local transitions = {}
@@ -53,7 +53,12 @@ function create_antimirov_automaton(regex)
             table.insert(f, v)
         end
     end
-    return Automaton.Automaton(statesNumber, f, tr)
+    local a = Automaton.Automaton(statesNumber, f, tr)
+    if debug then
+        print("Finished Antimirov automaton creation of", regex.root.value)
+        print(a:tostring())
+    end
+    return a
 end
 
 return create_antimirov_automaton

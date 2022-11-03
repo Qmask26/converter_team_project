@@ -5,7 +5,7 @@ require("src/r2nfa_converter/utils")
 require("src/utils/common")
 -- require("/path/to/rem_eps/function")
 
-function create_glushkov_automaton(regex)
+function create_glushkov_automaton(regex, debug)
     local r_copy = Regex.Regex:new(regex.root.value)
     linearize(r_copy)
     local statesNumber = 1
@@ -40,7 +40,12 @@ function create_glushkov_automaton(regex)
     for k in pairs(finish_symbols.items) do
         table.insert(f, states[k])
     end
-    return Automaton.Automaton:new(statesNumber, f, tr)
+    a = Automaton.Automaton:new(statesNumber, f, tr)
+    if debug then
+        print("Finished Glushkov automaton creation of", regex.root.value)
+        print(a:tostring())
+    end
+    return a
 end
 
 return create_glushkov_automaton
