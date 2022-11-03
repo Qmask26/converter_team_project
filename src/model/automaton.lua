@@ -167,7 +167,7 @@ function Automaton:addTrap(alphabet)
         self.finality[trap_state] = false
 
         if not alphabet then
-            local alphabet = self:getAlphabet()
+            alphabet = self:getAlphabet()
         end
         for ind_from, table_symbols in pairs(self.transitions) do
             for symbol in pairs(alphabet.items) do

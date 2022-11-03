@@ -26,9 +26,14 @@ Regex = class("Regex")
 RegexNode = class("RegexNode")
 
 --Класс Regex имеет единственное поле - root, корень дерева, представляющего regex
-function Regex:initialize(regex)
-    self.root = RegexNode:new(regex, #regex ~= 0)
-    self.alphabet = parseNodeAlphabet(self.root, #regex ~= 0)
+function Regex:initialize(regex, init_from_regex_node)
+    if init_from_regex_node then
+        self.root = regex -- regex is RegexNode class instance
+        self.alphabet = parseNodeAlphabet(self.root, #self.root.value ~= 0)
+    else
+        self.root = RegexNode:new(regex, #regex ~= 0)
+        self.alphabet = parseNodeAlphabet(self.root, #regex ~= 0)
+    end
 end
 
 function parseNodeAlphabet(regex, parse)
