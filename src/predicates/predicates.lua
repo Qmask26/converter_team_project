@@ -16,7 +16,6 @@ function EquivNFA(nfa1, nfa2, is_print)
     local dfa1 = minimization(Det(nfa1))
     local dfa2 = minimization(Det(nfa2))
 
-
     local res = Equal(dfa1, dfa2)
     if is_print ~= nil then
         print("Equal: " .. tostring(res))
