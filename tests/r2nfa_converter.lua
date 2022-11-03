@@ -33,7 +33,7 @@ print("Test Thompson automaton Th(R)")
 local r = Regex.Regex:new("(((a|(c|d)*)|bc)*)")
 local r1 = Regex.Regex:new("(a|b*)")
 local r2 = Regex.Regex:new("(a|ba)*")
-local a = create_thompson_automaton(r1)
+local a = create_thompson_automaton(r1, true)
 -- print(a:tostring())
 
 
@@ -48,7 +48,7 @@ local a = create_antimirov_automaton(r1)
 
 
 local r1 = Regex.Regex:new("a*|b*")
-local a = create_antimirov_automaton(r1)
+local a = create_antimirov_automaton(r1, true)
 -- print(a:tostring())
 
 
@@ -58,12 +58,12 @@ local a = create_glushkov_automaton(r1)
 -- print(a:tostring())
 
 local r1 = Regex.Regex:new("(a|b)(a*|ba*|b*)*")
-local a = create_glushkov_automaton(r1)
+local a = create_glushkov_automaton(r1, true)
 -- print(a:tostring())
 
 print("Test IlieYu automaton")
 local r1 = Regex.Regex:new("((aa)|b)((aa)|(bb))")
-local a = create_follow_automaton(r1)
+local a = create_follow_automaton(r1, true)
 print(a:tostring())
 
 local r1 = Regex.Regex:new("(a|b)(a*|ba*|b*)*")
