@@ -4,7 +4,7 @@ require "src/derivatives/brzozovski"
 require "src/derivatives/antimirov"
 require "src/automaton_functions/determinization"
 require "src/automaton_functions/arden"
-
+require "src/predicates/predicates"
 
 local function tableContains(tb, el) 
     for i = 1, #tb, 1 do
@@ -69,29 +69,39 @@ local function find_path(nfa, path, from, to, visited)
     end
 end
 function SemDet(in_nfa) 
-    local nfa =  addStart(in_nfa)
-    local alph = getAlphabet(nfa)
-    local reg = Arden(nfa)
-    -- print(find_path(nfa, "", 1, trs[alph[j]][k], {}), "lol", trs[alph[j]][k], alph[j], uncert[i])
-    local uncert = uncertStates(nfa)
-    for i = 1, #uncert, 1 do 
-        print(uncert[i])
+    local reg = Arden(in_nfa)
+    local nfa
+    if #in_nfa.start_states_raw > 1 then nfa = addStart(in_nfa) 
+    else
+        nfa = in_nfa
     end
-    print(nfa:tostring())
+    local alph = getAlphabet(nfa)
+    local uncert = uncertStates(nfa)
     for i = 1, #uncert, 1 do 
         local trs = uncertTransitions(nfa, uncert[i], alph)
         for j = 1, #alph, 1 do 
+            local derives = {}
             if #trs[alph[j]] > 1 then 
                 local words = {}
                 for k = 1, #trs[alph[j]], 1 do
                     table.insert(words, find_path(nfa, "", 1, trs[alph[j]][k], {}))
                 end
                 for k = 1, #words, 1 do
-                    local deriv = antimirov_derivative(words[k], reg)
-                    print(deriv:str(), #deriv:toarray(), "cab", reg.value, words[k])
+                    local deriv = brzozovski_derivative_word(words[k], reg)
+                    table.insert(derives, deriv)
                 end
-                print()
+            end
+            for k = 1, #derives, 1 do
+                local check = false
+                for m = 1, #derives, 1 do
+                    if k ~= m then 
+                        check = SubsetRegex(derives[k], derives[m])
+                        if check then break end
+                    end
+                end 
+                if check == false then return false end
             end
         end
     end
+    return true
 end
