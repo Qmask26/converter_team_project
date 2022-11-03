@@ -15,14 +15,14 @@ local Transition = Automaton_module.Transition
 function EquivNFA(nfa1, nfa2)
     local dfa1 = minimization(Det(nfa1))
     local dfa2 = minimization(Det(nfa2))
-
+    
     return Equal(dfa1, dfa2)
 end
 
 function EquivRegex(regex1, regex2)
     local nfa1 = create_thompson_automaton(regex1)
     local nfa2 = create_thompson_automaton(regex2)
-
+    
     return EquivNFA(nfa1, nfa2)
 end
 
@@ -122,6 +122,7 @@ local Predicates = {
     Annote = Annote,
     Equal = Equal,
     Bisimilar = Bisimilar,
+    SubsetRegex = SubsetRegex,
 }
 
 return Predicates
