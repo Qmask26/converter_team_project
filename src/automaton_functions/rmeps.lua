@@ -1,12 +1,6 @@
 require("src/utils/common")
 require("src/automaton_functions/is_dfa")
-<<<<<<< HEAD
 require("src/automaton_functions/determinization")
-=======
-require"src/automaton_functions/determinization"
-require"src/automaton_functions/is_dfa"
->>>>>>> db83d785003d8f8782f94517091a41fdd90a2cb5
-
 
 
 local class = require("src/model/middleclass")
