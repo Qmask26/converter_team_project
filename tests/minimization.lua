@@ -1,9 +1,6 @@
 local Automaton_module = require("src/model/automaton")
 require "src/automaton_functions/determinization"
 require "src/automaton_functions/inverse"
-local Automaton_module = require("src/model/automaton")
-require "src/automaton_functions/determinization"
-require "src/automaton_functions/inverse"
 
 local Automaton = Automaton_module.Automaton
 local Transition = Automaton_module.Transition
