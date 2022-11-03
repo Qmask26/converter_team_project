@@ -12,7 +12,7 @@ local dfa1 = Det(nfa1)
 dfa1:addTrap()
 print(dfa1:tostring())
 
-local r2 = Regex.Regex:new("b")
+local r2 = Regex.Regex:new("(b|bba)")
 local nfa2 = create_thompson_automaton(r2)
 local dfa2 = Det(nfa2)
 dfa2:addTrap()

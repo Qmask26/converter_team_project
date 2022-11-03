@@ -28,7 +28,7 @@ function create_antimirov_automaton(regex)
             final:add(current.root.value)
         end
         for _, v in pairs(alphabet) do
-            local deriv = antimirov_derivative(v, current.root)
+            local deriv = antimirov_derivative(v, current)
             for deriv_item in pairs(deriv.items) do
                 if not visited:has(deriv_item) then
                     table.insert(queue, Regex.Regex:new(deriv_item))

@@ -27,7 +27,12 @@ function simplify_outer(regex_node)
 	return regex_node
 end
 
-function brzozovski_derivative(symbol, regex_node)
+function brzozovski_derivative(symbol, regex)
+	local res_node = brzozovski_derivative_rec(symbol, regex.root)
+	return Regexs.Regex:new(res_node, true)
+end
+
+function brzozovski_derivative_rec(symbol, regex_node)
 	local res
 
 	if (regex_node.type == Regexs.operations.empty_set) then
@@ -39,7 +44,7 @@ function brzozovski_derivative(symbol, regex_node)
 			res = new_regexnode("", Regexs.operations.empty_set, 0)
 		end
 	elseif (regex_node.type == Regexs.operations.iter) then
-		local first_child_deriv = brzozovski_derivative(symbol, regex_node.firstChild)
+		local first_child_deriv = brzozovski_derivative_rec(symbol, regex_node.firstChild)
 		res = simplify_outer(new_regexnode(
 			first_child_deriv.value .. regex_node.value,
 			Regexs.operations.concat,
@@ -48,8 +53,8 @@ function brzozovski_derivative(symbol, regex_node)
 			regex_node
 		))
 	elseif (regex_node.type == Regexs.operations.alt) then
-		local first_child_deriv = brzozovski_derivative(symbol, regex_node.firstChild)
-		local second_child_deriv = brzozovski_derivative(symbol, regex_node.secondChild)
+		local first_child_deriv = brzozovski_derivative_rec(symbol, regex_node.firstChild)
+		local second_child_deriv = brzozovski_derivative_rec(symbol, regex_node.secondChild)
 		res = simplify_outer(new_regexnode(
 			"("..first_child_deriv.value.."|"..second_child_deriv.value..")",
 			Regexs.operations.alt,
@@ -58,7 +63,7 @@ function brzozovski_derivative(symbol, regex_node)
 			second_child_deriv
 		))
 	elseif (regex_node.type == Regexs.operations.concat) then
-		local first_child_deriv = brzozovski_derivative(symbol, regex_node.firstChild)
+		local first_child_deriv = brzozovski_derivative_rec(symbol, regex_node.firstChild)
 		local left_node = simplify_outer(new_regexnode(
 			first_child_deriv.value .. regex_node.secondChild.value,
 			Regexs.operations.concat,
@@ -66,8 +71,8 @@ function brzozovski_derivative(symbol, regex_node)
 			first_child_deriv,
 			regex_node.secondChild
 		))
-		if check_if_epsilon_in_regex(regex_node.firstChild) then
-			local second_child_deriv = brzozovski_derivative(symbol, regex_node.secondChild)
+		if check_if_epsilon_in_regex_node(regex_node.firstChild) then
+			local second_child_deriv = brzozovski_derivative_rec(symbol, regex_node.secondChild)
 			res = simplify_outer(new_regexnode(
 				"("..left_node.value.."|"..second_child_deriv.value..")",
 				Regexs.operations.alt,
@@ -82,8 +87,8 @@ function brzozovski_derivative(symbol, regex_node)
 	return res
 end
 
-function brzozovski_derivative_word(word, regex_node)
-	local res = regex_node
+function brzozovski_derivative_word(word, regex)
+	local res = regex
 	local i
 	for i = 1, #word do
 		local symbol = string.sub(word, i, i)

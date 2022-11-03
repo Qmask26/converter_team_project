@@ -62,8 +62,8 @@ function pumplength(rtree, max_n)
 		if #prefixes_to_process == 0 then all_prefixes_pumps = false end
 		
 		for _, prefix in pairs(prefixes_to_process) do
-			local deriv = brzozovski_derivative_word(prefix, rtree.root)
-			--print(prefix, deriv.value)
+			local deriv = brzozovski_derivative_word(prefix, rtree)
+			--print(prefix, deriv.root.value)
 
 			local is_prefix_pumps = false
 
@@ -74,7 +74,7 @@ function pumplength(rtree, max_n)
 					local w2 = string.sub(prefix, i, j) 
 					local w3 = string.sub(prefix, j+1, prefix_len)
 					-- get automaton and subset
-					local regex_to_pump = w1.."("..w2..")*"..w3..deriv.value	
+					local regex_to_pump = w1.."("..w2..")*"..w3..deriv.root.value	
 					local regex_to_pump = Regexs.Regex:new(regex_to_pump)
 					-- faster than SubsetRegex(regex_to_pump, rtree)
 					local nfa_to_pump = create_thompson_automaton(regex_to_pump)

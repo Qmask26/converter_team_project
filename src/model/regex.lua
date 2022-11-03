@@ -26,9 +26,14 @@ Regex = class("Regex")
 RegexNode = class("RegexNode")
 
 --Класс Regex имеет единственное поле - root, корень дерева, представляющего regex
-function Regex:initialize(regex)
-    self.root = RegexNode:new(regex, #regex ~= 0)
-    self.alphabet = parseNodeAlphabet(self.root, #regex ~= 0)
+function Regex:initialize(regex, init_from_regex_node)
+    if init_from_regex_node then
+        self.root = regex -- regex is RegexNode class instance
+        self.alphabet = parseNodeAlphabet(self.root, #self.root.value ~= 0)
+    else
+        self.root = RegexNode:new(regex, #regex ~= 0)
+        self.alphabet = parseNodeAlphabet(self.root, #regex ~= 0)
+    end
 end
 
 function parseNodeAlphabet(regex, parse)
@@ -39,11 +44,11 @@ function parseNodeAlphabet(regex, parse)
         local res = Set:new({regex.value})
         return res
     elseif regex.nchildren == 1 then
-        local res = parseNodeAlphabet(regex.firstChild, true)
+        local res = parseNodeAlphabet(regex.firstChild, #regex.value ~= 0)
         return res
     else
-        local res1 = parseNodeAlphabet(regex.firstChild, true)
-        local res2 = parseNodeAlphabet(regex.secondChild, true)
+        local res1 = parseNodeAlphabet(regex.firstChild, #regex.value ~= 0)
+        local res2 = parseNodeAlphabet(regex.secondChild, #regex.value ~= 0)
         res2:union(res1)
         return res2
     end
@@ -108,26 +113,31 @@ function parseRegexNodeAttributes(regex)
             if (type == Regex_module.operations.alt) then
                 separator = "|"
             end
+            local firstSize = 0
+            local secondSize = 0
+
             for k, v in pairs(subexpressions) do
                 if (k <= #subexpressions / 2) then
-                    if (#firstRegex > 0) then
+                    if (firstSize > 0) then
                         firstRegex = firstRegex .. separator .. v
                     else
                         firstRegex = v
                     end
+                    firstSize = firstSize + 1
                 else
-                    if (#secondRegex > 0) then
+                    if (secondSize > 0) then
                         secondRegex = secondRegex .. separator .. v
                     else
                         secondRegex = v
                     end
+                    secondSize = secondSize + 1
                 end
             end
-            firstChild = RegexNode:new(firstRegex, true)
-            secondChild = RegexNode:new(secondRegex, true) 
+            firstChild = RegexNode:new(firstRegex, #firstRegex ~= 0)
+            secondChild = RegexNode:new(secondRegex, #secondRegex ~= 0) 
         else
             nchildren = 1
-            firstChild = RegexNode:new(subexpressions[1], true)
+            firstChild = RegexNode:new(subexpressions[1], #subexpressions[1] ~= 0)
         end
     else
         nchildren = 0
@@ -270,7 +280,5 @@ end
 
 Regex_module.Regex = Regex
 Regex_module.RegexNode = RegexNode
-
-r = RegexNode:new("(((a|(c|d)*)|bc)*)", true)
 
 return Regex_module
