@@ -122,7 +122,6 @@ local Predicates = {
     Annote = Annote,
     Equal = Equal,
     Bisimilar = Bisimilar,
-    SubsetRegex = SubsetRegex,
 }
 
 return Predicates
