@@ -4,7 +4,7 @@ require "src/derivatives/brzozovski"
 require "src/derivatives/antimirov"
 require "src/automaton_functions/determinization"
 require "src/automaton_functions/arden"
-local Predicates = require "src/predicates/predicates"
+require "src/predicates/predicates"
 
 local function tableContains(tb, el) 
     for i = 1, #tb, 1 do
@@ -75,6 +75,8 @@ function SemDet(in_nfa)
     else
         nfa = in_nfa
     end
+    print("SemDet -> Connect all initial states:")
+    print(nfa:tostring())
     local alph = getAlphabet(nfa)
     local uncert = uncertStates(nfa)
     for i = 1, #uncert, 1 do 
@@ -95,13 +97,19 @@ function SemDet(in_nfa)
                 local check = false
                 for m = 1, #derives, 1 do
                     if k ~= m then 
-                        check = Predicates.SubsetRegex(derives[k], derives[m])
+                        check = SubsetRegex(derives[k], derives[m])
                         if check then break end
                     end
                 end 
-                if check == false then return false end
+                if check == false then  
+                    print("SemDet -> result:")
+                    print(false)
+                    return false 
+                end
             end
         end
     end
+    print("SemDet -> result:")
+    print(true)
     return true
 end

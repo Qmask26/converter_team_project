@@ -159,11 +159,15 @@ function Arden(nfaIn)
     else
         nfa = nfaIn
     end
+    print("Arden -> Connect all initial states:")
+    print(nfaIn:tostring())
     local new_nfa = modifyNFA(nfa)
     while new_nfa.states > 2 do
         new_nfa = ripState(new_nfa, 1)
     end
     local r = Regex.Regex:new(new_nfa.transitions_raw[1].symbol)
+    print("Arden -> regex:")
+    print(r.root.value)
     return r
 end
 
