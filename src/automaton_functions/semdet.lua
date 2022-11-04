@@ -119,3 +119,5 @@ function SemDet(in_nfa, out)
     end
     return true
 end
+
+return SemDet

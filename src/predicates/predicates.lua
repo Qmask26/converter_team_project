@@ -160,6 +160,9 @@ local Predicates = {
     Annote = Annote,
     Equal = Equal,
     Bisimilar = Bisimilar,
+    MergeBisim = MergeBisim,
+    SubsetRegex = SubsetRegex,
+    SubsetNFA = SubsetNFA,
 }
 
 return Predicates

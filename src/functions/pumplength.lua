@@ -112,3 +112,5 @@ function pumplength(rtree, verbose)
 	print_if_verbose("Pumplength is "..tostring(n), verbose)
 	return n
 end
+
+return pumplength
