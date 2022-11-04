@@ -1,3 +1,0 @@
-N1 = Thompson (aa(a)*(ba)*)* !!
-N2 = RemEps N1 !!
-Equiv N2 N1 !!
