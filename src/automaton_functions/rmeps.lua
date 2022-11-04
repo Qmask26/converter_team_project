@@ -15,7 +15,6 @@ local function dfs(nfa, u, transitions, visited, final_states)
     table.insert(visited, u)
     if nfa_dest:isStateFinal(u) then
         table.insert(final_states, u)
-        return
     end
 
     for symbol, next_state in pairs(nfa_dest.transitions[u]) do
@@ -116,21 +115,33 @@ function rmeps(nfa, debug)
     local visited = {}
     local res_final_states = {}
     dfs(nfa_dest, nfa_dest.start_states_raw[1], res_transitions, visited, res_final_states)
-    translate = {}
-    for k, v in pairs(visited) do
-        translate[v] = k
+    local vis_ind = {}
+    for k, v in pairs(res_transitions) do
+        vis_ind[v.from] = true
+        vis_ind[v.to] = true
+    end
+    local translate = {}
+    local i = 1
+    for k, v in pairs(vis_ind) do
+        if v ~= nil then
+            translate[k] = i
+            i = i + 1
+        end
     end
     for _, t in pairs(res_transitions) do
         t.to = translate[t.to]
         t.from = translate[t.from]
     end
+    res_final_states_filtered = {}
     for _, t in pairs(res_final_states) do
-        t = translate[t]
+        if translate[t] ~= nil then
+            table.insert(res_final_states_filtered, translate[t])
+        end
     end
     for _, t in pairs(nfa.start_states_raw) do
         t = translate[t]
     end
-    nfa_dest = Automaton:new(#visited, res_final_states, res_transitions, is_dfa(nfa_dest.transitions_raw), nfa.start_states_raw)
+    nfa_dest = Automaton:new(#visited, res_final_states_filtered, res_transitions, is_dfa(nfa_dest.transitions_raw), nfa.start_states_raw)
     if debug then
         print('after rmeps')
         print(nfa_dest:tostring())
