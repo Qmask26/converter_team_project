@@ -36,6 +36,9 @@ function parseNodeAlphabet(regex, parse)
         return Set:new({})
     end
     if regex.type == Regex_module.operations.symbol then
+        if regex.value == "" then
+            return Set:new({})
+        end
         local res = Set:new({regex.value})
         return res
     elseif regex.nchildren == 1 then
@@ -81,7 +84,7 @@ function RegexNode:initialize(regex, parse)
     self.value_for_print = self.value
     if (self.value == "") then
         self.value_for_print = "_epsilon_"
-        self.type = Regex_module.operations.empty_set
+        self.type = Regex_module.operations.symbol
         self.nchildren = 0
     end
     if parse then
