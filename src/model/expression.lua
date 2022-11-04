@@ -134,9 +134,9 @@ function Computable:chooseImplementation()
                 impl1 =  1
             end
 
-            if (MetaData.functions[self.name].first[2] == self.arg1.type or
+            if (MetaData.functions[self.name].first[2] == type or
             MetaData.functions[self.name].first[2] == MetaData.dataTypes.NFA and
-            self.arg1.type == MetaData.dataTypes.DFA) then
+            type == MetaData.dataTypes.DFA) then
                 impl1 =  2
             end
            
@@ -186,9 +186,9 @@ function Computable:chooseImplementation()
                 impl2 =  1
             end
 
-            if (MetaData.functions[self.name].second[2] == self.arg2.type or
+            if (MetaData.functions[self.name].second[2] == type or
             MetaData.functions[self.name].second[2] == MetaData.dataTypes.NFA and
-            self.arg2.type == MetaData.dataTypes.DFA) then
+            type == MetaData.dataTypes.DFA) then
                 impl2 =  2
             end
         
