@@ -24,6 +24,9 @@ function thompson_algorithm(reg)
         local m = thompson_algorithm(reg.firstChild)
         return automatons_iter(m)
     elseif (reg.type == Regex.operations.symbol) then
+        if reg.value == "" then
+            Automaton.Automaton(2, {2}, {Automaton.Transition(1, 2, Automaton.eps)})
+        end
         return Automaton.Automaton(2, {2}, {Automaton.Transition(1, 2, reg.value)})
     elseif (reg.type == Regex.operations.positive) then
         local m = thompson_algorithm(reg.firstChild)
