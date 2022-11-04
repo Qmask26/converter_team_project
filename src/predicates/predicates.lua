@@ -18,7 +18,7 @@ function EquivNFA(nfa1, nfa2, is_print)
 
     local res = Equal(dfa1, dfa2)
     if is_print ~= nil then
-        print("Equal: " .. tostring(res))
+        print("Equiv: " .. tostring(res))
     end
     return res
 end
@@ -29,7 +29,7 @@ function EquivRegex(regex1, regex2, is_print)
 
     local res = EquivNFA(nfa1, nfa2)
     if is_print ~= nil then
-        print("EquivNFA: " .. tostring(res))
+        print("Equiv: " .. tostring(res))
     end
     return res
 end
@@ -45,7 +45,7 @@ function SubsetNFA(nfa1, nfa2, is_print)
     local intersection = intersect_dfa(dfa1, dfa2)
     local res = EquivNFA(dfa1, intersection)
     if is_print ~= nil then
-        print("SubsetNFA: " .. tostring(res))
+        print("Subset: " .. tostring(res))
     end
     return res
 end
@@ -56,7 +56,7 @@ function SubsetRegex(regex1, regex2, is_print)
 
     local res = SubsetNFA(automaton1, automaton2)
     if is_print ~= nil then
-        print("SubsetRegex: " .. tostring(res))
+        print("Subset: " .. tostring(res))
     end
     return res
 end

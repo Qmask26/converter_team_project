@@ -34,4 +34,4 @@ function thompson_algorithm(reg)
     end
 end
 
-return thompson_algorithm
+return create_thompson_automaton

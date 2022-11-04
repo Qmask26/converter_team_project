@@ -1,1 +1,7 @@
 N1 = Glushkov ((ab)*|a)* !!
+N2 = Glushkov ((ab)*|a)* !!
+N3 = Reverse N2 !!
+N4 = Reverse N1 !!
+Equal N1 N2 !!
+Equal N3 N4 !!
+N5 = States N1 !!
