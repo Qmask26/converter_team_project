@@ -28,6 +28,8 @@ function thompson_algorithm(reg)
     elseif (reg.type == Regex.operations.positive) then
         local m = thompson_algorithm(reg.firstChild)
         return automatons_iter(m, true)
+    elseif (reg.type == Regex.operations.empty_set) then
+        return Automaton.Automaton(2, {2}, {Automaton.Transition(1, 2, Automaton.eps)})
     else
     end
 end
