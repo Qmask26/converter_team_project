@@ -2,8 +2,13 @@ local Regex = require("src/model/regex")
 local Automaton = require("src/model/automaton")
 require("src/r2nfa_converter/utils")
 
-function create_thompson_automaton(reg)
-    return thompson_algorithm(reg.root)
+function create_thompson_automaton(reg, debug)
+    a = thompson_algorithm(reg.root)
+    if debug then
+        print("Finished Thompson automaton creation of", reg.root.value)
+        print(a:tostring())
+    end
+    return a
 end
 
 function thompson_algorithm(reg)
@@ -23,6 +28,8 @@ function thompson_algorithm(reg)
     elseif (reg.type == Regex.operations.positive) then
         local m = thompson_algorithm(reg.firstChild)
         return automatons_iter(m, true)
+    elseif (reg.type == Regex.operations.empty_set) then
+        return Automaton.Automaton(2, {2}, {Automaton.Transition(1, 2, Automaton.eps)})
     else
     end
 end

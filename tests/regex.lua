@@ -28,25 +28,25 @@ assert(check_if_epsilon_in_regex_node(r.root) == true)
 print("Test brzozovski derivatives")
 
 local r = Regexs.Regex:new("a")
-local deriv = brzozovski_derivative("a", r)
+local deriv = brzozovski_derivative("a", r, true)
 assert(deriv.root.value == "")
-local deriv = brzozovski_derivative_word("aa", r)
+local deriv = brzozovski_derivative_word("aa", r, true)
 assert(deriv.root.type == Regexs.operations.empty_set)
 
 local r = Regexs.Regex:new("a|ba")
-local deriv = brzozovski_derivative("a", r)
+local deriv = brzozovski_derivative("a", r, true)
 assert(deriv.root.value_for_print == "_epsilon_")
-local deriv = brzozovski_derivative_word("ba", r)
+local deriv = brzozovski_derivative_word("ba", r, true)
 assert(deriv.root.value_for_print == "_epsilon_")
 
 local r = Regexs.Regex:new("aa|a(b)*")
-local deriv = brzozovski_derivative("a", r)
+local deriv = brzozovski_derivative("a", r, true)
 assert(deriv.root.value == "(a|(b)*)")
-local deriv = brzozovski_derivative_word("aa", r)
+local deriv = brzozovski_derivative_word("aa", r, true)
 assert(deriv.root.value_for_print == "_epsilon_")
 
 local r = Regexs.Regex:new("a(b)*")
-local deriv = brzozovski_derivative_word("abb", r)
+local deriv = brzozovski_derivative_word("abb", r, true)
 assert(deriv.root.value == "(b)*")
 
 --
@@ -58,19 +58,19 @@ function printv(v)
 end
 
 local r = Regexs.Regex:new("ab")
-local deriv = antimirov_derivative("a", r)
+local deriv = antimirov_derivative("a", r, true)
 assert(deriv:str() == "b")
 
 local r = Regexs.Regex:new("a|ab")
-local deriv = antimirov_derivative("a", r)
+local deriv = antimirov_derivative("a", r, true)
 assert(deriv:str() == " b" or deriv:str() == "b ") -- "epsilon" union "b"
 
 local r = Regexs.Regex:new("aa|a(b)*")
-local deriv = antimirov_derivative("a", r)
+local deriv = antimirov_derivative("a", r, true)
 assert(deriv:str() == "a (b)*" or deriv:str() == "(b)* a")
 
 local r = Regexs.Regex:new("a|(b)*a")
-local deriv = antimirov_derivative("a", r)
+local deriv = antimirov_derivative("a", r, true)
 assert(deriv:str() == "") -- equals "epsilon"
 
 

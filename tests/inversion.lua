@@ -1,4 +1,5 @@
 local Automaton_module = require("src/model/automaton")
+require("src/automaton_functions/inverse")
 
 local Automaton = Automaton_module.Automaton
 local Transition = Automaton_module.Transition
@@ -17,7 +18,7 @@ local transitions = {
 
 
 local automaton = Automaton:new(4, {3, 4}, transitions)
-local automaton_inversed = automaton:inverse()
+local automaton_inversed = inverse(automaton)
 
 
 for i = 1, #transitions, 1 do

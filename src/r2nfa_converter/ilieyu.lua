@@ -5,7 +5,7 @@ require("src/r2nfa_converter/glushkov")
 require("src/r2nfa_converter/utils")
 require("src/utils/common")
 
-function create_follow_automaton(regex)
+function create_follow_automaton(regex, debug)
     local r_copy = Regex.Regex:new(regex.root.value)
     linearize(r_copy)
     local statesNumber = 1
@@ -71,7 +71,12 @@ function create_follow_automaton(regex)
     for k in pairs(finish_symbols.items) do
         table.insert(f, states_new[k])
     end
-    return Automaton.Automaton:new(statesNumber_new, f, tr_f)
+    a = Automaton.Automaton:new(statesNumber, f, tr_f)
+    if debug then
+        print("Finished automaton IlieYu creation of", regex.root.value)
+        print(a:tostring())
+    end
+    return a
 end
 
 return create_follow_automaton

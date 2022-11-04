@@ -27,8 +27,14 @@ function simplify_outer(regex_node)
 	return regex_node
 end
 
-function brzozovski_derivative(symbol, regex)
+function brzozovski_derivative(symbol, regex, verbose)
+	print_if_verbose("Brzozovski derivative from: "..regex.root.value, verbose)
+	print_if_verbose("taking derivative by: "..symbol, verbose)
+
 	local res_node = brzozovski_derivative_rec(symbol, regex.root)
+
+	print_if_verbose("Brzozovski derivative result: "..res_node.value, verbose)
+
 	return Regexs.Regex:new(res_node, true)
 end
 
@@ -87,12 +93,16 @@ function brzozovski_derivative_rec(symbol, regex_node)
 	return res
 end
 
-function brzozovski_derivative_word(word, regex)
+function brzozovski_derivative_word(word, regex, verbose)
+	print_if_verbose("Brzozovski derivative by word from: "..regex.root.value, verbose)
+	print_if_verbose("Taking derivative by word: "..word, verbose)
+	print_if_verbose("Splitting on symbols ->", verbose)
+
 	local res = regex
 	local i
 	for i = 1, #word do
 		local symbol = string.sub(word, i, i)
-		res = brzozovski_derivative(symbol, res)
+		res = brzozovski_derivative(symbol, res, verbose)
 	end
 	return res
 end

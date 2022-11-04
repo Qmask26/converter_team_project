@@ -86,17 +86,19 @@ function Equal(nfa1, nfa2, is_print)
 
     local is_bisim, equiv_classes_1, equiv_classes_2
     is_bisim, equiv_classes_1, equiv_classes_2, equiv_classes1 = is_bisimilar(grammar_1, grammar_2)
-    --print_equiv_classes(equiv_classes1)
-    if not is_bisim and is_print ~= nil then
-        print("Equal: false")
+    if not is_bisim then
+        if is_print ~= nil then
+            print("Equal: false")
+        end
         return false
     end
 
     local is_bisim_reverse, equiv_classes_reverse_1, equiv_classes_reverse_2
     is_bisim_reverse, equiv_classes_reverse_1, equiv_classes_reverse_2, equiv_classes2 = is_bisimilar(grammar_1_reverse, grammar_2_reverse)
-    --print_equiv_classes(equiv_classes2)
-    if not is_bisim_reverse and is_print ~= nil then
-        print("Equal: false")
+    if not is_bisim_reverse then
+        if is_print ~= nil then
+            print("Equal: false")
+        end
         return false
     end
 
@@ -118,8 +120,10 @@ function Equal(nfa1, nfa2, is_print)
     transition_grammar_2.nonterminals = nonterminals2
 
     is_bisim = is_bisimilar(transition_grammar_1, transition_grammar_2)
-    if not is_bisim and is_print ~= nil then
-        print("Equal: false")
+    if not is_bisim then
+        if is_print ~= nil then
+            print("Equal: false")
+        end
         return false
     end
     if is_print ~= nil then
@@ -156,6 +160,9 @@ local Predicates = {
     Annote = Annote,
     Equal = Equal,
     Bisimilar = Bisimilar,
+    MergeBisim = MergeBisim,
+    SubsetRegex = SubsetRegex,
+    SubsetNFA = SubsetNFA,
 }
 
 return Predicates

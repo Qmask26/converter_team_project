@@ -38,7 +38,11 @@ local function find(tbl, elem)
     return false
 end
 
-function rmeps(nfa)
+function rmeps(nfa, debug)
+    if debug then
+        print('before rmeps')
+        print(nfa:tostring())
+    end
     local visited = {}
     local closure_transitions = {}
     for i, t in pairs(nfa.transitions_raw) do
@@ -127,7 +131,10 @@ function rmeps(nfa)
         t = translate[t]
     end
     nfa_dest = Automaton:new(#visited, res_final_states, res_transitions, is_dfa(nfa_dest.transitions_raw), nfa.start_states_raw)
-
+    if debug then
+        print('after rmeps')
+        print(nfa_dest:tostring())
+    end
     return nfa_dest
 end
 
