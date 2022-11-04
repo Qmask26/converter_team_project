@@ -126,8 +126,7 @@ local function ripState(nfa, state)
             -- if symbol == "" then symbol = "_epsilon_" end
             local added = false
             -- if selfLoop then symbol = "(".. symbol .. ")"  end
-            if symbol ~= "" then 
-                local from = fromState[j]
+            local from = fromState[j]
                 local to = toState[i]
                 if from > state then from = from - 1 end
                 if to > state then to = to - 1 end
@@ -143,7 +142,6 @@ local function ripState(nfa, state)
                     end
                 end
                 if added ~= true then table.insert(transitions, {from = to, symbol = symbol , to = from, false,  label = ""}) end
-            end
         end
     end
 
@@ -159,11 +157,11 @@ function Arden(nfaIn, out)
     else
         nfa = nfaIn
     end
-    if out == true then
-        print("Arden -> Connect all initial states:")
-        print(nfaIn:tostring())
-    end
     local new_nfa = modifyNFA(nfa)
+    if out == true then
+        print("Arden -> Modify NFA:")
+        print(new_nfa:tostring())
+    end
     while new_nfa.states > 2 do
         new_nfa = ripState(new_nfa, 1)
     end
