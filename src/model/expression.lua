@@ -62,8 +62,7 @@ function Computable:compute()
                 returningType = MetaData.functions[self.name].result[impl]
             else 
                 if (self.typecheck and not self:checkArgs()) then
-                    print(self.name, self.arg1.type, self.arg2.type)
-                    print("Type mismatch!")
+                    print("Type mismatch in " .. self.name)
                     os.exit()
                     return nil
                 end
