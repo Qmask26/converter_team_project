@@ -1,7 +1,7 @@
 local class = require("src/model/middleclass")
 local Automaton = require("src/model/automaton")
 local Regex = require("src/model/regex")
--- require("src/utils/common")
+require "src/automaton_functions/determinization"
 
 function deepcopy(orig)
     local orig_type = type(orig)
@@ -17,23 +17,6 @@ function deepcopy(orig)
     end
     return copy
 end
-
-local function  modifyNFA(nfa)
-   local start = nfa.start_states_raw[1]
-   local new_start = nfa.states + 1
-   local startStates = {new_start}
-
-   local new_final = nfa.states + 2
-   local finalStates = {new_final}
-
-   local transitions = deepcopy(nfa.transitions_raw)
-   for i = 1, #nfa.final_states_raw, 1 do
-    table.insert(transitions, {from = nfa.final_states_raw[i], symbol = "_epsilon_", to = new_final, label = ""})
-    end
-   table.insert(transitions, {from = new_start, symbol = "_epsilon_", to = start, label = ""})
-
-   return Automaton.Automaton:new(nfa.states + 2, finalStates, transitions, false, startStates)
-end
 local function getTransition(trs, from, to)
     local tr = {}
     for i = 1, #trs, 1 do
@@ -44,6 +27,41 @@ local function getTransition(trs, from, to)
 
     return tr
 end
+local function  modifyNFA(nfa)
+   local start = nfa.start_states_raw[1]
+   local new_start = nfa.states + 1
+   local startStates = {new_start}
+
+   local new_final = nfa.states + 2
+   local finalStates = {new_final}
+   local transitions = {}
+   for i = 1,nfa.states, 1 do
+        for j = 1,nfa.states, 1 do
+            local trs = getTransition(nfa.transitions_raw, i, j)
+            local symbol = ""
+            if #trs == 1 then 
+                table.insert(transitions, {from = i, symbol = trs[1].symbol, to = j, label = ""})
+            elseif #trs > 1 then
+                for k = 1, #trs,1 do
+                    if k ~= 1 then
+                        symbol = symbol .. '|' .. trs[k].symbol
+                    else
+                        symbol = symbol .. trs[k].symbol
+                    end
+                end 
+                table.insert(transitions, {from = i, symbol = symbol, to = j, label = ""})
+            end
+        end
+   end
+
+   for i = 1, #nfa.final_states_raw, 1 do
+    table.insert(transitions, {from = nfa.final_states_raw[i], symbol = "_epsilon_", to = new_final, label = ""})
+    end
+   table.insert(transitions, {from = new_start, symbol = "_epsilon_", to = start, label = ""})
+
+   return Automaton.Automaton:new(nfa.states + 2, finalStates, transitions, false, startStates)
+end
+
 local function ripState(nfa, state)
     local toState = {}
     local fromState= {}
@@ -53,11 +71,13 @@ local function ripState(nfa, state)
 
     local self_trs = getTransition(nfa.transitions_raw, state, state)
     for i = 1, #self_trs, 1 do
+        local sym = ""
+        if self_trs[i].symbol ~= "_epsilon_" then sym = self_trs[i].symbol end
         if i == 1 then 
-            selfLoopSymbol = '(' .. selfLoopSymbol .. self_trs[i].symbol
+            selfLoopSymbol = '(' .. selfLoopSymbol .. sym
             selfLoop = true
         else
-            selfLoopSymbol = selfLoopSymbol .. '+' .. self_trs[i].symbol
+            selfLoopSymbol = selfLoopSymbol .. '|' .. sym
         end
     end
     if selfLoop then 
@@ -82,41 +102,46 @@ local function ripState(nfa, state)
         local tr_to = getTransition(nfa.transitions_raw, toState[i], state)
         local to_symbol = ""
         for k = 1, #tr_to, 1 do
-            if tr_to[k].symbol ~= "_epsilon_" and to_symbol ~= "" then 
-                to_symbol =  to_symbol .."|".. tr_to[k].symbol 
+            local sym = ""
+            if tr_to[k].symbol ~= "_epsilon_" then sym = tr_to[k].symbol end
+            if to_symbol ~= "" then 
+                to_symbol =  "|".. sym  .. to_symbol
             elseif tr_to[k].symbol ~= "_epsilon_" then 
-                to_symbol = to_symbol .. tr_to[k].symbol 
+                to_symbol = sym .. to_symbol
             end
         end
         for j = 1, #fromState, 1 do
             local tr_from = getTransition(nfa.transitions_raw, state, fromState[j])
             local from_symbol = ""
             for k = 1, #tr_from, 1 do
-                if tr_from[k].symbol ~= "_epsilon_" and from_symbol ~= "" then 
-                    from_symbol = "|" .. from_symbol .. tr_from[k].symbol 
-                elseif tr_from[k].symbol ~= "_epsilon_" then 
-                    from_symbol = from_symbol .. tr_from[k].symbol 
+                local sym = ""
+                if tr_from[k].symbol ~= "_epsilon_" then sym = tr_from[k].symbol end
+                if from_symbol ~= "" then 
+                    from_symbol = "|" .. sym .. from_symbol 
+                elseif tr_from[k].symbol ~= "_epsilon_" then
+                    from_symbol = sym .. from_symbol 
                 end
             end 
             symbol = to_symbol .. selfLoopSymbol .. from_symbol
+            -- if symbol == "" then symbol = "_epsilon_" end
             local added = false
             -- if selfLoop then symbol = "(".. symbol .. ")"  end
-            if symbol ~= "" then 
-                local from = fromState[j]
+            local from = fromState[j]
                 local to = toState[i]
                 if from > state then from = from - 1 end
                 if to > state then to = to - 1 end
                 local trs = getTransition(transitions, to, from)
                 for k = 1, #trs,1 do
                     for m = 1, #transitions, 1 do
+                        local sym = ""
+                        if transitions[m].symbol ~= "_epsilon_" then sym = transitions[m].symbol end
                         if transitions[m].to == trs[k].to and transitions[m].from == trs[k].from then
-                            transitions[m].symbol = '(' .. symbol .. '+' .. transitions[m].symbol .. ')'
+                            transitions[m].symbol = '(' .. symbol .. '|' .. sym  .. ')'
                             added = true
                         end
                     end
                 end
                 if added ~= true then table.insert(transitions, {from = to, symbol = symbol , to = from, false,  label = ""}) end
-            end
         end
     end
 
@@ -126,23 +151,26 @@ local function ripState(nfa, state)
     return Automaton.Automaton:new(nfa.states - 1, finalStates, transitions, false, startStates)
 end
 
-function Arden(nfa)
-    print(nfa:tostring())
+function Arden(nfaIn, out)
+    local nfa
+    if #nfaIn.start_states_raw > 1 then nfa = addStart(nfaIn) 
+    else
+        nfa = nfaIn
+    end
     local new_nfa = modifyNFA(nfa)
-    print(new_nfa:tostring())
-    while new_nfa.states > 2 do
-        new_nfa = ripState(new_nfa, 1)
+    if out == true then
+        print("Arden -> Modify NFA:")
         print(new_nfa:tostring())
     end
-
-    -- new_nfa = ripState(new_nfa, 4)
-    -- print(new_nfa:tostring())
-    -- new_nfa = ripState(new_nfa, 3)
-    -- print(new_nfa:tostring())
-    -- new_nfa = ripState(new_nfa, 1)
-    -- print(new_nfa:tostring())
-    -- new_nfa = ripState(new_nfa, 1)
-    -- print(new_nfa:tostring())
+    while new_nfa.states > 2 do
+        new_nfa = ripState(new_nfa, 1)
+    end
+    local r = Regex.Regex:new(new_nfa.transitions_raw[1].symbol)
+    if out == true then
+        print("Arden -> regex:")
+        print(r.root.value)
+    end
+    return r
 end
 
 return Arden

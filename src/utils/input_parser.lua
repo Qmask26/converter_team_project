@@ -13,10 +13,19 @@ end
 
 function Parser:parse(filename)
     local expressions = {}
+    local inputLines = {}
     for line in io.lines(filename) do
-        local expression = nil
         if (self.typecheck) then
-            line = tchck:typecheck(line)
+            line = tchck:typecheck(line) 
+        end
+        inputLines[#inputLines + 1] = line
+    end
+
+    for _, line in pairs(inputLines) do
+        local expression = nil
+        if (line:find("!!") ~= nil) then
+            needToPrintStepByStep = true
+            line = line:sub(1, line:find("!!") - 1)
         end
         if (line:find("=") ~= nil) then
             expression = EM.expression:new(Parser:parseDeclaration(line), EM.expressionType.computable)
@@ -26,6 +35,10 @@ function Parser:parse(filename)
             expression = EM.expression:new(Parser:parsePredicate(line), EM.expressionType.computable)
         end
         expressions[#expressions + 1] = expression
+        if (expression.type == EM.expressionType.computable) then
+            expression.value:compute()
+        end
+        needToPrintStepByStep = nil
     end
     return expressions
 end
@@ -47,7 +60,7 @@ function Parser:parseArgs(func, arg)
     if (identifiersList[arg] ~= nil) then
         return EM.computable:new(arg, EM.computableType.variable, identifiersList[arg].value)
     else
-        return EM.computable:new(arg, FL.functions[func].first)
+        return EM.computable:new(arg, whatType(arg))
     end
 end
 

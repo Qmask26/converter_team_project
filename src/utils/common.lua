@@ -1,4 +1,10 @@
 
+function print_if_verbose(value, verbose)
+    if verbose then
+        print(value)
+    end
+end
+
 function table.length(arr)
     local size = 0
     for _ in pairs(arr) do
