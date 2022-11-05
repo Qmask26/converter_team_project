@@ -47,23 +47,25 @@ function Computable:compute()
     local returningType = self.type
     if (self.value == nil) then
         if (self.type == computableType.func) then
-            if (self.typecheck and not self:checkArgs()) then
-                print("Type mismatch!")
-                os.exit()
-                return nil
-            end
             if (MetaData.functions.isOverloaded[self.name]) then
                 local impl = self:chooseImplementation()
                 local func = MetaData.functions[self.name].call[impl]
-                if (self.arg2 == nil) then
+                if (self.arg2 == nil) then  
                     self.value = func(self.arg1:compute())
                     
                 else 
-                    self.value = func(self.arg1:compute(), self.arg2:compute())
+                    local p1, _ = self.arg1:compute()
+                    local p2, _ = self.arg2:compute()
+                    self.value = func(p1, p2)
                     
                 end
                 returningType = MetaData.functions[self.name].result[impl]
             else 
+                if (self.typecheck and not self:checkArgs()) then
+                    print("Type mismatch in " .. self.name)
+                    os.exit()
+                    return nil
+                end
                 if (self.arg2 == nil) then
                     self.value = MetaData.functions[self.name](self.arg1:compute())
                 else
@@ -132,11 +134,12 @@ function Computable:chooseImplementation()
                 impl1 =  1
             end
 
-            if (MetaData.functions[self.name].first[2] == self.arg1.type or
+            if (MetaData.functions[self.name].first[2] == type or
             MetaData.functions[self.name].first[2] == MetaData.dataTypes.NFA and
-            self.arg1.type == MetaData.dataTypes.DFA) then
+            type == MetaData.dataTypes.DFA) then
                 impl1 =  2
             end
+           
         end
 
     if (self.arg2 ~= nil) then
@@ -183,17 +186,19 @@ function Computable:chooseImplementation()
                 impl2 =  1
             end
 
-            if (MetaData.functions[self.name].second[2] == self.arg2.type or
+            if (MetaData.functions[self.name].second[2] == type or
             MetaData.functions[self.name].second[2] == MetaData.dataTypes.NFA and
-            self.arg2.type == MetaData.dataTypes.DFA) then
-                impl2 =  1
+            type == MetaData.dataTypes.DFA) then
+                impl2 =  2
             end
+        
         end
     else
         impl1 = impl2
     end
 
     if (impl1 ~= impl2) then
+        print(self.name, self.arg1.type, self.arg2.type)
         print("Type mismatch")
         os.exit()
     end

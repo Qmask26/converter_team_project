@@ -27,6 +27,7 @@ RegexNode = class("RegexNode")
 
 --Класс Regex имеет единственное поле - root, корень дерева, представляющего regex
 function Regex:initialize(regex, init_from_regex_node)
+    regex = trimBrackets(regex)
     if init_from_regex_node then
         self.root = regex -- regex is RegexNode class instance
         self.alphabet = parseNodeAlphabet(self.root, #self.root.value ~= 0)
@@ -41,6 +42,9 @@ function parseNodeAlphabet(regex, parse)
         return Set:new({})
     end
     if regex.type == Regex_module.operations.symbol then
+        if regex.value == "" or regex.value == " " then
+            return Set:new({})
+        end
         local res = Set:new({regex.value})
         return res
     elseif regex.nchildren == 1 then
@@ -68,6 +72,7 @@ function canParseEpsilonRec(regex)
     elseif regex.type == Regex_module.operations.positive then
         return canParseEpsilonRec(regex.firstChild)
     elseif regex.type == Regex_module.operations.symbol then
+        if regex.value == "" then return true end
         return false
     elseif regex.type == Regex_module.operations.empty_set then
         return true
@@ -85,7 +90,7 @@ function RegexNode:initialize(regex, parse)
     self.value_for_print = self.value
     if (self.value == "") then
         self.value_for_print = "_epsilon_"
-        self.type = Regex_module.operations.empty_set
+        self.type = Regex_module.operations.symbol
         self.nchildren = 0
     end
     if parse then

@@ -275,6 +275,12 @@ setmetatable(CONVERTER_FUNCTIONS.Glushkov, {
 })
 
 
+setmetatable(CONVERTER_FUNCTIONS.IlieYu, {
+    __call = function (x, arg) 
+        return r2nfa.IlieYu(arg, needToPrintStepByStep)
+     end
+})
+
 setmetatable( CONVERTER_FUNCTIONS.Determinize, {
     __call = function (x, arg) 
         return Automaton_functions.Determinize(arg, needToPrintStepByStep)
@@ -305,19 +311,19 @@ setmetatable( CONVERTER_FUNCTIONS.RemEps, {
      end
 })
 
- CONVERTER_FUNCTIONS.Equiv.call[1] = function (x, arg1, arg2)
+ CONVERTER_FUNCTIONS.Equiv.call[1] = function (arg1, arg2)
     return Predicates.EquivNFA(arg1, arg2, needToPrintStepByStep)
  end
 
- CONVERTER_FUNCTIONS.Equiv.call[2] = function (x, arg1, arg2)
+ CONVERTER_FUNCTIONS.Equiv.call[2] = function (arg1, arg2)
     return Predicates.EquivRegex(arg1, arg2, needToPrintStepByStep)
  end
 
- CONVERTER_FUNCTIONS.Subset.call[1] = function (x, arg1, arg2)
+ CONVERTER_FUNCTIONS.Subset.call[1] = function (arg1, arg2)
     return Predicates.SubsetRegex(arg1, arg2, needToPrintStepByStep)
  end
 
- CONVERTER_FUNCTIONS.Subset.call[2] = function (x, arg1, arg2)
+ CONVERTER_FUNCTIONS.Subset.call[2] = function (arg1, arg2)
     return Predicates.SubsetNFA(arg1, arg2, needToPrintStepByStep)
  end
 
@@ -343,13 +349,22 @@ setmetatable( CONVERTER_FUNCTIONS.MergeBisim, {
 
 setmetatable( CONVERTER_FUNCTIONS.PumpLength, {
     __call = function (x, arg1) 
-        return pumplength.PumpLength(arg1, needToPrintStepByStep)
+        return pumplength(arg1, needToPrintStepByStep)
      end
 })
 
 setmetatable( CONVERTER_FUNCTIONS.SemDet, {
     __call = function (x, arg1) 
         return Automaton_functions.SemDet(arg1, needToPrintStepByStep)
+     end
+})
+
+setmetatable( CONVERTER_FUNCTIONS.States, {
+    __call = function (x, arg1) 
+        if (needToPrintStepByStep == true) then
+            print("States number: ", arg1.states)
+        end
+        return arg1.states
      end
 })
 

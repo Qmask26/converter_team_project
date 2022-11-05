@@ -139,25 +139,26 @@ end
 
 
 function Typechecker:typecheck(line)
+    local tmpLine = line
     local lines = {}
     local error = nil
-    if (line:find("!!") ~= nil) then
-        line = line:sub(1, line:find("!!") - 1)
-        print(line)
+    if (tmpLine:find("!!") ~= nil) then
+        tmpLine = tmpLine:sub(1, tmpLine:find("!!") - 1)
     end
-        if (line:find("=") ~= nil) then
-            line = removeExtraOps(line)
-             error = Typechecker:checkDeclaration(line)
-        elseif (line:lower():find("test") ~= nil) then
-             error = Typechecker:checkTest(line)
+        if (tmpLine:find("=") ~= nil) then
+            tmpLine = removeExtraOps(tmpLine)
+             error = Typechecker:checkDeclaration(tmpLine)
+        elseif (tmpLine:lower():find("test") ~= nil) then
+             error = Typechecker:checkTest(tmpLine)
         else
-             error = Typechecker:checkPredicate(line)
+             error = Typechecker:checkPredicate(tmpLine)
         end
         if (error ~= nil) then
-            print("Error at " .. line .. " : " .. error)
+            print("Error at " .. tmpLine .. " : " .. error)
+            os.exit()
             return
         end
-        lines[#lines + 1] = line
+        lines[#lines + 1] = tmpLine
     if (error ~= nil) then
         print(error)
         return nil
