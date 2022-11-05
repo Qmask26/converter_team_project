@@ -51,8 +51,8 @@ local function isEqual(a, b)
     if type(a) == "number" and type(b) == "number" then return a == b end
     if type(b) == "number" then acc = {b} else acc = b end
     if #a ~= #acc then return false end
-    local check = false
     for i = 1, #a, 1 do
+        local check = false
         for j = 1, #acc, 1 do
             if a[i] == acc[j] then check = true break end  
         end
