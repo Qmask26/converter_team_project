@@ -100,8 +100,10 @@ function linearize(regex)
 
     function annote(regex_node)
         if regex_node.type == Regex.operations.symbol then
-            regex_node.value = regex_node.value .. label
-            label = label + 1
+            if regex_node.value ~= "" then
+                regex_node.value = regex_node.value .. label
+                label = label + 1
+            end
         elseif regex_node.type == Regex.operations.concat or regex_node.type == Regex.operations.alt then
             annote(regex_node.firstChild)
             annote(regex_node.secondChild)
@@ -122,7 +124,9 @@ function get_start_possible_symbols(regex)
 
     function get_start_possible_symbols_node(regex_node)
         if regex_node.type == Regex.operations.symbol then
-            symbols:add(regex_node.value)
+            if regex_node.value ~= "" then 
+                symbols:add(regex_node.value)
+            end
         elseif regex_node.type == Regex.operations.alt then
             get_start_possible_symbols_node(regex_node.firstChild)
             get_start_possible_symbols_node(regex_node.secondChild)
@@ -149,7 +153,9 @@ function get_finish_possible_symbols(regex)
 
     function get_finish_possible_symbols_node(regex_node)
         if regex_node.type == Regex.operations.symbol then
-            symbols:add(regex_node.value)
+            if regex_node.value ~= "" then 
+                symbols:add(regex_node.value)
+            end
         elseif regex_node.type == Regex.operations.alt then
             get_finish_possible_symbols_node(regex_node.firstChild)
             get_finish_possible_symbols_node(regex_node.secondChild)
