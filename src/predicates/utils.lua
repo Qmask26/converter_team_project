@@ -130,7 +130,7 @@ function make_new_grammar(rules, empty_nonterminals, nonterminals, equiv_classes
     local new_terminals = {}
     local new_nonterminals = {}
     local empty_nonterm
-    if empty_nonterminals[1] ~= nill then empty_nonterm = empty_nonterminals[1] end
+    if empty_nonterminals[1] ~= nil then empty_nonterm = empty_nonterminals[1] end
 
     for _, eqNonterms in pairs(equiv_classes) do
         local nonterm = eqNonterms[1]
@@ -152,7 +152,7 @@ function make_new_grammar(rules, empty_nonterminals, nonterminals, equiv_classes
         end
     end
 
-    if empty_nonterminals[1] ~= nill then
+    if empty_nonterminals[1] ~= nil then
         new_rules[empty_nonterm] = {{}}
 
         equiv_classes[#equiv_classes + 1] = {}
