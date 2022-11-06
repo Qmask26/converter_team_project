@@ -86,6 +86,7 @@ end
 --Поле nchildren содержит количество дочерних вершин (максимум две). Им соответствуют поля firstChild и secondChild
 
 function RegexNode:initialize(regex, parse)
+    regex = trimBrackets(regex)
     self.value = regex
     self.value_for_print = self.value
     if (self.value == "") then
@@ -197,7 +198,7 @@ function whatTypeOfRegex(regex)
 end
 
 function trimBrackets(regex) 
-    while (regex:byte(1) == bytes["("] and cbsEndsAt(regex, 1) == #regex) do
+    while (#regex > 0 and regex:byte(1) == bytes["("] and cbsEndsAt(regex, 1) == #regex) do
         regex = regex:sub(2, #regex - 1)
     end
     return regex
