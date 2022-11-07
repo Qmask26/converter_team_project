@@ -81,7 +81,7 @@ function getAlphabet(nfa)
     local trans = nfa.transitions_raw
     local alph = {}
     for i = 1, #trans, 1 do
-        if trans[i].symbol == "_epsilon_" then goto continue end
+        if trans[i].symbol == "_epsilon_" or trans[i].symbol == "" then goto continue end
         local check = false
         for j = 1, #alph, 1 do
             check = alph[j] == trans[i].symbol
@@ -108,6 +108,11 @@ local function dfs(nfa, q, C)
         
         if nfa.transitions[q]["_epsilon_"] ~= nil then
             local trarr = nfa.transitions[q]["_epsilon_"][""]
+            for i = 1, #trarr, 1 do
+                dfs(nfa, trarr[i], C)
+            end
+        elseif nfa.transitions[q][""] ~= nil then
+            local trarr = nfa.transitions[q][""][""]
             for i = 1, #trarr, 1 do
                 dfs(nfa, trarr[i], C)
             end
@@ -190,6 +195,10 @@ function Det(nfaIn, out)
     local rename = {}
     for i = 1, #Q, 1 do
         rename[i] = Q[i]
+        for j = 1, #Q[i], 1 do
+            io.write(Q[i][j], " ")
+        end
+        print()
         Q[i] = i 
     end
     for i = 1, #F, 1 do
