@@ -71,7 +71,7 @@ function deepcopy(orig, copies)
             setmetatable(copy, deepcopy(getmetatable(orig), copies))
         end
     else -- number, string, boolean, etc
-        copy = ori
+        copy = orig
     end
     return copy
 end
