@@ -195,7 +195,6 @@ function Det(nfaIn, out)
     local rename = {}
     for i = 1, #Q, 1 do
         rename[i] = Q[i]
-        print()
         Q[i] = i 
     end
     for i = 1, #F, 1 do
