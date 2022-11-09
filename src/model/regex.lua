@@ -119,17 +119,11 @@ function parseRegexNodeAttributes(regex)
             if (type == Regex_module.operations.alt) then
                 separator = "|"
             end
-            local firstSize = 0
             local secondSize = 0
 
             for k, v in pairs(subexpressions) do
-                if (k <= #subexpressions / 2) then
-                    if (firstSize > 0) then
-                        firstRegex = firstRegex .. separator .. v
-                    else
-                        firstRegex = v
-                    end
-                    firstSize = firstSize + 1
+                if (k < 2) then
+                    firstRegex = v
                 else
                     if (secondSize > 0) then
                         secondRegex = secondRegex .. separator .. v
@@ -176,8 +170,8 @@ function whatTypeOfRegex(regex)
             regex:byte(#regex) == bytes["*"]) then
         operation = Regex_module.operations.iter
     else
-        alt = false
-        i = 1
+        local alt = false
+        local i = 1
         while i <= #regex do
             if (regex:byte(i) == bytes["|"]) then
                 alt = true
@@ -224,7 +218,7 @@ function extractSubexpressions(regex, tp)
             subexpressions = {}
         end
     elseif (tp == Regex_module.operations.concat) then
-        i = 1
+        local i = 1
         subexpressions = {}
         while i <= #regex do
             if (regex:byte(i) == bytes["("]) then
@@ -232,7 +226,7 @@ function extractSubexpressions(regex, tp)
                 if (regex:byte(endsAt + 1) == bytes["*"]) then
                     endsAt = endsAt + 1
                 end
-                subex = regex:sub(i, endsAt)
+                local subex = regex:sub(i, endsAt)
                 if (#subex > 0) then
                     table.insert(subexpressions, subex)
                 end
@@ -249,7 +243,6 @@ function extractSubexpressions(regex, tp)
             end
         end
     elseif (tp == Regex_module.operations.alt) then
-        i = 1
         subexpressions = {}
         local subex = ""
         local i = 1
