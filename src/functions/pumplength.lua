@@ -25,8 +25,6 @@ end
 function pumplength(rtree, verbose)
 	print_if_verbose("Finding pumplength of regex: "..rtree.root.value, verbose)
 
-	local max_n = 100
-
 	local nfa = create_thompson_automaton(rtree)
 	local dfa_trap = minimization(Det(nfa))
 	local alphabet = dfa_trap:getAlphabet()
@@ -37,7 +35,7 @@ function pumplength(rtree, verbose)
 	local n = 1
 	local pumped_prefixes = Set:new({})
 	local states_to_process = {{dfa.start_states_raw[1], ''}}
-	while n <= max_n do
+	while true do
 		--get prefixes
 		local prefixes_to_process = {}
 		local new_states_to_process = {}
@@ -56,9 +54,12 @@ function pumplength(rtree, verbose)
 				end
 			end
 		end
-
 		states_to_process = new_states_to_process
-		--print(table_tostring(prefixes_to_process))
+
+		print_if_verbose(
+			"prefixes of len "..tostring(n)..": "..table_tostring_as_array(prefixes_to_process), 
+			verbose
+		) 
 
 		local all_prefixes_pumps = true
 		if #prefixes_to_process == 0 then all_prefixes_pumps = false end
@@ -101,12 +102,11 @@ function pumplength(rtree, verbose)
 			--print("FOUND N:", n)
 			break
 		end
+		if #states_to_process == 0 then
+			print_if_verbose("Max word length is reached. No new words in regex. Exiting", verbose)
+			break
+		end
 		n = n + 1
-	end
-
-	if n == max_n + 1 then 
-		print_if_verbose("MAX N is reached. So pumplength is 0", verbose)
-		return 0 
 	end
 
 	print_if_verbose("Pumplength is "..tostring(n), verbose)
