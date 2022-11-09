@@ -7,7 +7,7 @@ function antimirov_derivative(symbol, regex, verbose)
 	print_if_verbose("taking derivative by: "..symbol, verbose)
 	local res = antimirov_derivative_rec(symbol, regex.root)
 
-	print_if_verbose("Antimirov derivative result: ".."{"..res:str().."}", verbose)
+	print_if_verbose("Antimirov derivative result: "..res:str(), verbose)
 
 	return res
 end
@@ -52,6 +52,7 @@ function antimirov_derivative_rec(symbol, regex_node)
 			res:union(second_child_set)
 		end
 	end
+	print(regex_node.value, res:str())
 	return res
 end
 

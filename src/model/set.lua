@@ -48,11 +48,12 @@ function Set:toarray()
 end
 
 function Set:str()
-	res = ""
+	res = "{"
 	for key in pairs(self.items) do
-		res = res .. tostring(key) .. " "
+		res = res .. '"' .. tostring(key) .. '", '
 	end
-	return string.sub(res, 0, -2)
+	if #res > 1 then return string.sub(res, 0, -3).."}" end
+	return res.."}"
 end
 
 return Set
