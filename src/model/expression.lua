@@ -44,6 +44,9 @@ function Computable:initialize(name, type, arg1, arg2)
 end
 
 function Computable:compute()
+    if (identifiersList[self.name] ~= nil) then
+        return identifiersList[self.name], varTypes[self.name]
+    end
     local returningType = self.type
     if (self.value == nil) then
         if (self.type == computableType.func) then
