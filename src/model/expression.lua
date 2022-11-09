@@ -206,8 +206,25 @@ function Computable:chooseImplementation()
 end
 
 function Computable:checkArgs()
+    if (self.arg1.type == computableType.variable) then
+        if (has[self.arg1.name]) then
+            self.arg1.type = varTypes[self.arg1.name]
+        end
+    end
+    if (self.arg2 ~= nil and self.arg2.type == computableType.variable) then
+        if (has[self.arg2.name]) then
+            self.arg2.type = varTypes[self.arg2.name]
+        end
+    end
     if (self.arg1.type == computableType.Int and MetaData.functions[self.name].first ~= MetaData.dataTypes.Int) then
         return false
+    end
+    if (self.arg1.type == computableType.DFA and MetaData.functions[self.name].first ~= MetaData.dataTypes.DFA or 
+        self.arg1.type == computableType.DFA and MetaData.functions[self.name].first ~= MetaData.dataTypes.NFA) then
+        return false
+    end
+    if (self.arg1.type == computableType.NFA and MetaData.functions[self.name].first ~= MetaData.dataTypes.NFA) then
+    return false
     end
     if (self.arg1.type == computableType.Regex and MetaData.functions[self.name].first ~= MetaData.dataTypes.Regex) then
         return false
@@ -249,11 +266,18 @@ function Computable:checkArgs()
         end
     end
     if (self.arg2 ~= nil) then
-        if (self.arg2.type == computableType.Int and MetaData.functions[self.name].first ~= MetaData.dataTypes.Int) then
+        if (self.arg2.type == computableType.Int and MetaData.functions[self.name].second ~= MetaData.dataTypes.Int) then
             return false
         end
-        if (self.arg2.type == computableType.Regex and MetaData.functions[self.name].first ~= MetaData.dataTypes.Regex) then
+        if (self.arg2.type == computableType.Regex and MetaData.functions[self.name].second ~= MetaData.dataTypes.Regex) then
             return false
+        end
+        if (self.arg2.type == computableType.DFA and MetaData.functions[self.name].second ~= MetaData.dataTypes.DFA or 
+        self.arg2.type == computableType.DFA and MetaData.functions[self.name].second ~= MetaData.dataTypes.NFA) then
+        return false
+        end
+        if (self.arg2.type == computableType.NFA and MetaData.functions[self.name].second ~= MetaData.dataTypes.NFA) then
+        return false
         end
         if (self.arg2.type == computableType.func) then
             if (MetaData.functions.isOverloaded[self.name]) then
@@ -292,7 +316,6 @@ function Computable:checkArgs()
             end
         end
     end
-
     return true
 end
 
