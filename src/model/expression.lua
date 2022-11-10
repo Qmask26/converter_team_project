@@ -44,6 +44,7 @@ function Computable:initialize(name, type, arg1, arg2)
 end
 
 function Computable:compute()
+   -- print("COMPUTING", self.name, self.arg1, self.arg2)
     if (identifiersList[self.name] ~= nil) then
         return identifiersList[self.name], varTypes[self.name]
     end
@@ -201,7 +202,6 @@ function Computable:chooseImplementation()
     end
 
     if (impl1 ~= impl2) then
-        print(self.name, self.arg1.type, self.arg2.type)
         print("Type mismatch")
         os.exit()
     end
@@ -222,7 +222,7 @@ function Computable:checkArgs()
     if (self.arg1.type == computableType.Int and MetaData.functions[self.name].first ~= MetaData.dataTypes.Int) then
         return false
     end
-    if (self.arg1.type == computableType.DFA and MetaData.functions[self.name].first ~= MetaData.dataTypes.DFA or 
+    if (self.arg1.type == computableType.DFA and MetaData.functions[self.name].first ~= MetaData.dataTypes.DFA and 
         self.arg1.type == computableType.DFA and MetaData.functions[self.name].first ~= MetaData.dataTypes.NFA) then
         return false
     end
