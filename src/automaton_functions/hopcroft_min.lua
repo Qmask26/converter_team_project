@@ -27,7 +27,6 @@ local function findEquivalenceClasses(dfa)
   local Q = {} 
   local nonFinal = {} 
   local class = {}
-
   for i = 1, dfa.states, 1 do
     table.insert(Q, i)
     if dfa:isStateFinal(i) == false then
@@ -37,7 +36,11 @@ local function findEquivalenceClasses(dfa)
       class[i] = 1
     end
   end
-  local P = {F, nonFinal}
+  local P = {F}
+  if #nonFinal ~= 0 then
+    table.insert(P, nonFinal)
+  end
+  
 
   -- inv[r][a] — массив состояний, из которых есть ребра по символу 'a' в состояние  r
   local inv = buildInv(dfa)
@@ -50,7 +53,7 @@ local function findEquivalenceClasses(dfa)
   end
   while #queue ~= 0 do
     local pair = table.remove(queue, 1)
-     -- Involved — список из номеров классов, содержащихся во множестве T′,
+     -- Involved — ассоциативный массив из номеров классов в векторы из номеров вершин.
     local involved = {}
     for i = 1, #pair.states, 1 do
       local q = pair.states[i]
@@ -66,11 +69,9 @@ local function findEquivalenceClasses(dfa)
       end
     end
     for i = 1, #involved, 1 do
-      local a = involved[i]
-      if involved[a] ~= nil then
-        if #involved[a] < #P[a] then
-          table.insert(P, {})
-        end
+      local a = i
+      if #involved[a] < #P[a] then
+        table.insert(P, {})
         local b = #P
         for j = 1, #involved[a], 1 do
           local r = involved[a][j]
@@ -84,10 +85,16 @@ local function findEquivalenceClasses(dfa)
           class[P[b][j]] = b
         end
         for j = 1, #alph, 1 do
-          table.insert(queue, {b, alph[j]})
+          table.insert(queue, {states = {b}, symbol = alph[j]})
         end
       end
     end
+  end
+  for i = 1, #P, 1 do
+    for j = 1, #P[i], 1 do
+      io.write(P[i][j], " ")
+    end
+    print()
   end
   return P
 end
@@ -148,14 +155,13 @@ local function deleteUnreachables(dfa)
       })
     end
   end
-  local dfa = Automaton.Automaton:new(#R, finals, trs, false, start)
-  local t = dfa:allTransitions(1)
+  local dfa = Automaton.Automaton:new(#R, finals, trs, true, start)
   return dfa
 end
 
 local function deleteNondisting(dfa)
   local eqv = findEquivalenceClasses(dfa)
-
+  
   local Q = #eqv
   local rename = {}
   for i = 1, #eqv, 1 do
@@ -214,18 +220,17 @@ local function deleteDead(dfa)
   local inv_dfa = inverse(dfa)
 
   inv_dfa.states = inv_dfa.states + 1
+  inv_dfa.isDFA = false
   for i = 1, #inv_dfa.start_states_raw, 1 do
     inv_dfa:addTransition(inv_dfa.states, inv_dfa.start_states_raw[i], "", "")
   end
   table.insert(inv_dfa.start_states_raw, 1, inv_dfa.states)
   local undead_dfa = deleteUnreachables(inv_dfa)
-
-
-  local states = dfa.states - 1
+  local states = undead_dfa.states - 1
   local start = {}
   for i = 2, #undead_dfa.start_states_raw, 1 do
     local start_state = undead_dfa.start_states_raw[i]
-    if undead_dfa.start_states_raw[i] > undead_dfa.start_states_raw[1] then 
+    if undead_dfa.start_states_raw[i] >= undead_dfa.start_states_raw[1] then 
       start_state = start_state - 1
     end
     table.insert(start, start_state)
@@ -234,7 +239,7 @@ local function deleteDead(dfa)
   local final = {}
   for i = 1, #undead_dfa.final_states_raw, 1 do
     local final_state = undead_dfa.final_states_raw[i]
-    if undead_dfa.final_states_raw[i] > undead_dfa.final_states_raw[1] then 
+    if undead_dfa.final_states_raw[i] >= undead_dfa.final_states_raw[1] then 
       final_state = final_state  - 1
     end
     table.insert(final, final_state )
@@ -260,7 +265,6 @@ local function deleteDead(dfa)
     end
   end
   local new_dfa = Automaton.Automaton:new(states, final, trs, false, start)
-
   return inverse(new_dfa)
 end
 
