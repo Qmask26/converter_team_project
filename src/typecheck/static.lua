@@ -254,7 +254,8 @@ function Typechecker:checkRightSide(right)
                 end
             end
         end
-        return nil, Metadata.functions[funcs[1]].result
+        print("--------------------", funcs[1].name, funcs[2], funcs[3])
+        return nil, Metadata.functions[funcs[1].name].result
     end
 end
 
