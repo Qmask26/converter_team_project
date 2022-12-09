@@ -3,7 +3,8 @@ local Automaton_module = require("src/model/automaton")
 local Regexs = require("src/model/regex")
 local Set = require("src/model/set")
 
-function Match(regex, str)
+function Match(regex, str, debug)
+    str = string.sub(str.root.value, 2, #str.root.value - 1)
     local nfa = create_glushkov_automaton(regex)
     local start_state = nfa.start_states_raw[1]
     local matches = Set:new({})
@@ -11,8 +12,13 @@ function Match(regex, str)
     for i = 1, #str, 1 do
         matches = search_occurrences(i, i, start_state, str, matches, nfa)
     end
-
-    return (matches:toarray())
+    local res = matches:toarray()
+    if debug == true then
+        for _, v in pairs(res) do
+            print(v)
+        end
+    end
+    return res
 end
 
 function search_occurrences(start, endd, state_from, str, matches, nfa)
@@ -29,3 +35,6 @@ function search_occurrences(start, endd, state_from, str, matches, nfa)
     end
     return matches
 end
+
+return Match
+

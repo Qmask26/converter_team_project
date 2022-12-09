@@ -254,7 +254,6 @@ function Typechecker:checkRightSide(right)
                 end
             end
         end
-        print("--------------------", funcs[1].name, funcs[2], funcs[3])
         return nil, Metadata.functions[funcs[1].name].result
     end
 end
@@ -366,6 +365,8 @@ function Typechecker:whatType(c)
         return Metadata.dataTypes.Int
     elseif (identifiersList[c] ~= nil) then
         return identifiersList[c]
+    elseif (#c >= 2 and c:sub(1, 1) == "'" and c:sub(#c, #c) == "'") then
+        return Metadata.dataTypes.String
     else
         return Metadata.dataTypes.Regex
     end

@@ -3,6 +3,7 @@ local Derivatives = require("src/derivatives/module")
 local r2nfa = require("src/r2nfa_converter/module")
 local Predicates = require("src/predicates/predicates")
 local pumplength = require("src/functions/pumplength")
+local match = require("src/functions/match")
 --Все возможные функции преобразователя с типами их аргументов и возвращаемого значения
 --argNum - количество аргументовф
 --first - первый аргумент
@@ -20,7 +21,7 @@ local DATA_TYPES = {
     String = 9,
     Value = 10,
     Bool = 11,
-    IO = 12
+    IO = 12,
 }
 
 
@@ -264,6 +265,13 @@ local  CONVERTER_FUNCTIONS = {
         result = DATA_TYPES.IO
     },
 
+    Match = {
+        argNum = 2,
+        first = DATA_TYPES.Regex,
+        second = DATA_TYPES.String,
+        result = DATA_TYPES.String,
+    },
+
     isOverloaded = {
         Equiv = true,
         DeLinearize = true,
@@ -427,6 +435,13 @@ setmetatable( CONVERTER_FUNCTIONS.PumpLength, {
      end
 })
 
+setmetatable( CONVERTER_FUNCTIONS.Match, {
+    __call = function (x, arg1, arg2) 
+        return match(arg1, arg2, needToPrintStepByStep)
+     end
+})
+
+
 setmetatable( CONVERTER_FUNCTIONS.SemDet, {
     __call = function (x, arg1) 
         return Automaton_functions.SemDet(arg1, needToPrintStepByStep)
@@ -450,3 +465,4 @@ Metadata = {
 }
 
 return Metadata
+
