@@ -4,7 +4,7 @@ local Regexs = require("src/model/regex")
 local Set = require("src/model/set")
 
 function Match(regex, str, debug)
-    str = string.sub(str.root.value, 2, #str.root.value - 1)
+    -- str = string.sub(str.root.value, 2, #str.root.value - 1)
     local nfa = create_glushkov_automaton(regex)
     local start_state = nfa.start_states_raw[1]
     local matches = Set:new({})
