@@ -37,10 +37,10 @@ local function findEquivalenceClasses(dfa)
     end
   end
   local P = {F}
+  
   if #nonFinal ~= 0 then
     table.insert(P, nonFinal)
   end
-  
 
   -- inv[r][a] — массив состояний, из которых есть ребра по символу 'a' в состояние  r
   local inv = buildInv(dfa)
@@ -68,7 +68,7 @@ local function findEquivalenceClasses(dfa)
         end
       end
     end
-    for i = 1, #involved, 1 do
+    for i, val in pairs(involved) do
       local a = i
       if #involved[a] < #P[a] then
         table.insert(P, {})
@@ -161,6 +161,14 @@ end
 
 local function deleteNondisting(dfa)
   local eqv = findEquivalenceClasses(dfa)
+
+  print("euqiv")
+  for i = 1, #eqv, 1 do 
+    for j = 1, #eqv[i], 1 do 
+      io.write(eqv[i][j], ' ')
+    end
+    print()
+  end
   
   local Q = #eqv
   local rename = {}
