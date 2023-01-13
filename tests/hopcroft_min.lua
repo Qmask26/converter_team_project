@@ -43,6 +43,8 @@ local Regex = require("src/model/regex")
 -- print(min1:tostring(), min2:tostring())
 
 -- 1000 generated regexes test
+-- Elapsed time: 249.512677
+-- Elapsed time: 68.629967
 local i = 1
 local nClock = os.clock()
 for line in io.lines("tests/generated_regexes.txt") do
@@ -50,7 +52,7 @@ for line in io.lines("tests/generated_regexes.txt") do
     local a = create_thompson_automaton(r)
     local min1 = minimization(a)
     i = i + 1
-    if i == 100 then break end
+    if i == 50 then break end
 end
 print("Elapsed time: " .. os.clock() - nClock)
 
@@ -60,8 +62,8 @@ for line in io.lines("tests/generated_regexes.txt") do
     local r = Regex.Regex:new(line)
     local a = create_thompson_automaton(r)
     local da = Det(a)
-    local min2 = minimize(da, true)
+    local min2 = minimize(da)
     i = i + 1
-    if i == 100 then break end
+    if i == 50 then break end
 end
 print("Elapsed time: " .. os.clock() - nClock)

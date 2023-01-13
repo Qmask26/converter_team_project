@@ -90,12 +90,6 @@ local function findEquivalenceClasses(dfa)
       end
     end
   end
-  for i = 1, #P, 1 do
-    for j = 1, #P[i], 1 do
-      io.write(P[i][j], " ")
-    end
-    print()
-  end
   return P
 end
 
@@ -161,14 +155,6 @@ end
 
 local function deleteNondisting(dfa)
   local eqv = findEquivalenceClasses(dfa)
-
-  print("euqiv")
-  for i = 1, #eqv, 1 do 
-    for j = 1, #eqv[i], 1 do 
-      io.write(eqv[i][j], ' ')
-    end
-    print()
-  end
   
   local Q = #eqv
   local rename = {}
