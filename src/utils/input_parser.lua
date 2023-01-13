@@ -14,33 +14,65 @@ end
 function Parser:parse(filename)
     local expressions = {}
     local inputLines = {}
-    for line in io.lines(filename) do
-        if (self.typecheck) then
-            line = tchck:typecheck(line) 
+    if (filename ~= "-r") then
+        for line in io.lines(filename) do
+            if (self.typecheck) then
+                line = tchck:typecheck(line) 
+            end
+            inputLines[#inputLines + 1] = line
         end
-        inputLines[#inputLines + 1] = line
+        for _, line in pairs(inputLines) do
+            local expression = nil
+            if (line:find("!!") ~= nil) then
+                needToPrintStepByStep = true
+                line = line:sub(1, line:find("!!") - 1)
+            end
+            if (line:find("=") ~= nil) then
+                expression = EM.expression:new(Parser:parseDeclaration(line), EM.expressionType.computable)
+            elseif (line:lower():find("test") ~= nil) then
+                expression = EM.expression:new(Parser:parseTest(line), EM.expressionType.test)
+            else
+                expression = EM.expression:new(Parser:parsePredicate(line), EM.expressionType.computable)
+            end
+            expressions[#expressions + 1] = expression
+            if (expression.type == EM.expressionType.computable) then
+                expression.value:compute()
+            end
+            needToPrintStepByStep = nil
+        end
+        return expressions
+    else 
+        
+        io.write("The REPL of converter has started\n")
+        io.write("type `exit()` to abort execution\n")
+        while true do
+            local line = ""
+            io.write(">>>> ")
+            io.flush()
+            line = io.read()
+            
+            if (line == "exit()") then
+                break
+            end
+            line = tchck:typecheck(line)
+            local expression = nil
+            if (line:find("!!") ~= nil) then
+                needToPrintStepByStep = true
+                line = line:sub(1, line:find("!!") - 1)
+            end
+            if (line:find("=") ~= nil) then
+                expression = EM.expression:new(Parser:parseDeclaration(line), EM.expressionType.computable)
+            elseif (line:lower():find("test") ~= nil) then
+                expression = EM.expression:new(Parser:parseTest(line), EM.expressionType.test)
+            else
+                expression = EM.expression:new(Parser:parsePredicate(line), EM.expressionType.computable)
+            end
+            if (expression.type == EM.expressionType.computable) then
+                expression.value:compute()
+            end
+            needToPrintStepByStep = nil
+        end
     end
-
-    for _, line in pairs(inputLines) do
-        local expression = nil
-        if (line:find("!!") ~= nil) then
-            needToPrintStepByStep = true
-            line = line:sub(1, line:find("!!") - 1)
-        end
-        if (line:find("=") ~= nil) then
-            expression = EM.expression:new(Parser:parseDeclaration(line), EM.expressionType.computable)
-        elseif (line:lower():find("test") ~= nil) then
-            expression = EM.expression:new(Parser:parseTest(line), EM.expressionType.test)
-        else
-            expression = EM.expression:new(Parser:parsePredicate(line), EM.expressionType.computable)
-        end
-        expressions[#expressions + 1] = expression
-        if (expression.type == EM.expressionType.computable) then
-            expression.value:compute()
-        end
-        needToPrintStepByStep = nil
-    end
-    return expressions
 end
 
 function Parser:parsePredicate(line)
@@ -76,15 +108,27 @@ function Parser:parseDeclaration(line)
     local lines = split(line, "=")
     local left = trim(lines[1])
     local right = Parser:parseRightSide(trim(lines[2]))
-    identifiersList[left] = {}
-    identifiersList[left].value = EM.computable:new(left, EM.computableType.variable, right)
-    identifiersList[left].type = FL.functions[right.name].result
+    lines[2] = trim(lines[2])
+    if (identifiersList[lines[2]] ~= nil) then
+        identifiersList[left] = {}
+        identifiersList[left].value = identifiersList[lines[2]].value
+        identifiersList[left].type = identifiersList[lines[2]].type
+    else 
+        identifiersList[left] = {}
+        identifiersList[left].value = EM.computable:new(left, EM.computableType.variable, right)
+        if (FL.functions[right.name] ~= nil) then
+            identifiersList[left].type = FL.functions[right.name].result
+        else
+            identifiersList[left].type = whatType(right.name)
+        end
+    end
     return identifiersList[left].value
 end
 
 function Parser:parseRightSide(right)
     local lines = split(right, " ")
     if (#lines == 1) then
+
         return EM.computable:new(lines[1], whatType(lines[1]))
     elseif (#lines == 2) then
         

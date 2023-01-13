@@ -49,7 +49,7 @@ function get_state_index(states, state)
 	end
 end
 
-function intersect_dfa(dfa1, dfa2)
+function intersect_dfa(dfa1, dfa2, debug)
 	local new_states = dekart_proizv(get_states_list(dfa1.states), get_states_list(dfa2.states))
 	local new_final_states = dekart_proizv(
 		get_finality_states(dfa1.finality), 
@@ -75,5 +75,12 @@ function intersect_dfa(dfa1, dfa2)
 			})
 		end
 	end
-	return Automaton.Automaton:new(states_number, final_states_indexes, transitions, true, {1})
+	local result = Automaton.Automaton:new(states_number, final_states_indexes, transitions, true, {1})
+	if (debug) then 
+		print("Intersection:")
+		print(result:toString())
+	end
+	return result
 end
+
+return intersect_dfa

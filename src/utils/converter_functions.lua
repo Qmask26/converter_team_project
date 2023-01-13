@@ -3,6 +3,7 @@ local Derivatives = require("src/derivatives/module")
 local r2nfa = require("src/r2nfa_converter/module")
 local Predicates = require("src/predicates/predicates")
 local pumplength = require("src/functions/pumplength")
+local match = require("src/functions/match")
 --Все возможные функции преобразователя с типами их аргументов и возвращаемого значения
 --argNum - количество аргументовф
 --first - первый аргумент
@@ -20,7 +21,7 @@ local DATA_TYPES = {
     String = 9,
     Value = 10,
     Bool = 11,
-    IO = 12
+    IO = 12,
 }
 
 
@@ -108,6 +109,14 @@ local  CONVERTER_FUNCTIONS = {
         argNum = 1,
         first = {DATA_TYPES.NFA, DATA_TYPES.Regex},
         result = {DATA_TYPES.NFA, DATA_TYPES.Regex},
+        call = {},
+    },
+
+    Intersection = {
+        argNum = 2,
+        first = {DATA_TYPES.DFA, DATA_TYPES.Regex},
+        second = {DATA_TYPES.DFA, DATA_TYPES.Regex},
+        result = {DATA_TYPES.DFA, DATA_TYPES.Regex},
         call = {},
     },
 
@@ -224,6 +233,22 @@ local  CONVERTER_FUNCTIONS = {
         result = DATA_TYPES.Bool
     },
 
+    Concatenate = {
+        argNum = 2,
+        first = {DATA_TYPES.Regex, DATA_TYPES.NFA},
+        second = {DATA_TYPES.Regex, DATA_TYPES.NFA},
+        result = {DATA_TYPES.Regex, DATA_TYPES.NFA},
+        call = {}
+    },
+
+    Unite = {
+        argNum = 2,
+        first = {DATA_TYPES.Regex, DATA_TYPES.NFA},
+        second = {DATA_TYPES.Regex, DATA_TYPES.NFA},
+        result = {DATA_TYPES.Regex, DATA_TYPES.NFA},
+        call = {}
+    },
+
     TestNFA = {
         argNum = 3,
         first = DATA_TYPES.NFA,
@@ -240,13 +265,23 @@ local  CONVERTER_FUNCTIONS = {
         result = DATA_TYPES.IO
     },
 
+    Match = {
+        argNum = 2,
+        first = DATA_TYPES.Regex,
+        second = DATA_TYPES.String,
+        result = DATA_TYPES.String,
+    },
+
     isOverloaded = {
         Equiv = true,
         DeLinearize = true,
         DeAnnote = true,
         Subset = true,
         Minimal = true,
-    }
+        Intersection = true,
+        Unite = true,
+        Concatenate = true,
+    },
 }
 
 for key, value in pairs( CONVERTER_FUNCTIONS) do
@@ -327,6 +362,53 @@ setmetatable( CONVERTER_FUNCTIONS.RemEps, {
     return Predicates.SubsetNFA(arg1, arg2, needToPrintStepByStep)
  end
 
+ CONVERTER_FUNCTIONS.Intersection.call[1] = function (arg1, arg2)
+    return Automaton_functions.Intersection(arg1, arg2, needToPrintStepByStep)
+ end
+
+ CONVERTER_FUNCTIONS.Intersection.call[2] = function (arg1, arg2)
+    arg1 = Automaton_functions.Determinize(Automaton_functions.Thompson(arg1))
+    arg2 = Automaton_functions.Determinize(Automaton_functions.Thompson(arg2))
+    local res = r2nfa.IlieYu(Automaton_functions.Intersection(arg1, arg2, false))
+    if (needToPrintStepByStep == true) then
+        print("Intersection: ")
+        print(res.root.value)
+    end
+    return res
+ end
+
+ CONVERTER_FUNCTIONS.Concatenate.call[1] = function (arg1, arg2)
+    local regArg1 = r2nfa.IlieYu(arg1)
+    local regArg2 = r2nfa.IlieYu(arg2)
+    local res = Automaton_functions.Arden(Automaton_functions.Concatenate(regArg1, regArg2, false))
+    if (needToPrintStepByStep == true) then
+        print("Concatenation: ")
+        print(res.root.value)
+        print("")
+    end
+    return res
+ end
+
+ CONVERTER_FUNCTIONS.Unite.call[2] = function (arg1, arg2)
+    return Automaton_functions.Unite(arg1, arg2, needToPrintStepByStep)
+ end
+
+ CONVERTER_FUNCTIONS.Unite.call[1] = function (arg1, arg2)
+    local regArg1 = r2nfa.IlieYu(arg1)
+    local regArg2 = r2nfa.IlieYu(arg2)
+    local res = Automaton_functions.Arden(Automaton_functions.Unite(regArg1, regArg2, false))
+    if (needToPrintStepByStep == true) then
+        print("Unite: ")
+        print(res.root.value)
+        print("")
+    end
+    return res
+ end
+
+ CONVERTER_FUNCTIONS.Concatenate.call[2] = function (arg1, arg2)
+    return Automaton_functions.Concatenate(arg1, arg2, needToPrintStepByStep)
+ end
+
 
 
 setmetatable( CONVERTER_FUNCTIONS.Equal, {
@@ -353,6 +435,13 @@ setmetatable( CONVERTER_FUNCTIONS.PumpLength, {
      end
 })
 
+setmetatable( CONVERTER_FUNCTIONS.Match, {
+    __call = function (x, arg1, arg2) 
+        return match(arg1, arg2, needToPrintStepByStep)
+     end
+})
+
+
 setmetatable( CONVERTER_FUNCTIONS.SemDet, {
     __call = function (x, arg1) 
         return Automaton_functions.SemDet(arg1, needToPrintStepByStep)
@@ -376,3 +465,4 @@ Metadata = {
 }
 
 return Metadata
+
