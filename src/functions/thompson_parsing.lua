@@ -1,36 +1,40 @@
 local Automaton = require("src/model/automaton")
 local Regexs = require("src/model/regex") 
 
-local function getStates(nfa, Q, from, symbol)
-    local states = nfa.transitions[from][symbol]['']
-    local eps_states = {}
-    if nfa.transitions[from]["_epsilon_"] ~= nil then
-        eps_states = nfa.transitions[from]["_epsilon_"]['']
+local function addState(nfa, start, eps)
+    local flag = true
+    for _, state in pairs(start) do
+        table.insert(eps, state)
+        if nfa.transitions[state]["_epsilon_"] ~= nil then 
+            for _, estate in pairs(nfa.transitions[state]["_epsilon_"][""]) do
+                table.insert(eps, estate)
+            end 
+        end
     end
-    for i = 1, #states, 1 do
-        table.insert(Q, states[i])
-    end
-    for i = 1, #eps_states, 1 do
-        getStates(nfa, Q, eps_states[i], symbol)
-    end
+    return eps
 end
-function thompson_parsing(nfa , regex)
-    local next_states
-    local cur_states = {1}
-    for i = 1, #regex, 1 do
-        next_states = {}
-        local cur_symbol = string.sub(regex, i, i)
-        while #cur_states ~= 0 do
-            local state = table.remove(cur_states, 1)
-            local next = {}
-            getStates(nfa, next, state, cur_symbol)
-            for j = 1, #next, 1 do
-                io.write(next[j], ' ')
+
+function thompson_parsing(nfa , str)
+    local s = {}
+    str:gsub(".",function(c) table.insert(s,c) end)
+    local current_states = {}
+    current_states = addState(nfa, nfa.start_states_raw, current_states)
+
+    for _, c in pairs(s) do
+        local next_states = {}
+        for _, state in pairs(current_states) do
+            if nfa.transitions[state][c] ~= nil then
+                next_states = addState(nfa, nfa.transitions[state][c][""], next_states)
             end
-            print()
         end
-        for j = 1, #next_states, 1 do
-            table.insert(cur_states, next_states[j])
+        current_states = {}
+        for _, state in pairs(next_states) do
+            table.insert(current_states, state)
         end
     end
+    
+    for _, state in pairs(current_states) do
+        if nfa.finality[state] then return true end
+    end
+    return false    
 end
